@@ -1,22 +1,24 @@
-/* ExtraPlate - data.js : demo centre, pickup points, sample listings, sample impact.
-   All listings and figures here are DEMO / SAMPLE data, exactly as stated in the presentation. */
+/* ExtraPlate - data.js : demo centre, pickup points, listings, NGOs, sample impact.
+   Content adapted from the original project demo (foodnxt.netlify.app) — its real
+   event listings, NGO directory and impact figures — rebranded to ExtraPlate. */
 
-const DEMO_NGO = {
-  name: "Helping Hands Foundation",
-  lat: 28.4744, lng: 77.5046,
-  area: "Knowledge Park III, Greater Noida"
-};
+/* Demo centre — Knowledge Park 2, Greater Noida (original project centre) */
+const DEMO_CENTRE = { name: "Knowledge Park 2, Greater Noida", lat: 28.46243, lng: 77.49474 };
 
-/* Demo pickup points a donor can choose (Greater Noida / Noida area) */
+/* Verified NGO directory (original project data) */
+const NGOS = [
+  { id: "NGO-01", name: "Robin Hood Food Relief Chapter", phone: "+91 98800 11223", area: "Knowledge Park 2 & Alpha, Greater Noida", volunteers: 24 },
+  { id: "NGO-02", name: "Akshaya Feed India Trust", phone: "+91 98450 77889", area: "Pari Chowk & Jagat Farm, Greater Noida", volunteers: 42 },
+  { id: "NGO-03", name: "Hope Haven Shelter & Kitchen", phone: "+91 97311 44556", area: "Knowledge Park 3 & ITS Campus, Greater Noida", volunteers: 15 }
+];
+
+/* Pickup points = the real venues of the original listings */
 const PICKUP_POINTS = [
-  { name: "Pari Chowk, Greater Noida",   lat: 28.4622, lng: 77.5100 },
-  { name: "Jagat Farm, Greater Noida",   lat: 28.4897, lng: 77.5122 },
-  { name: "Alpha 1, Greater Noida",      lat: 28.4723, lng: 77.5183 },
-  { name: "Delta 1, Greater Noida",      lat: 28.4819, lng: 77.5410 },
-  { name: "Surajpur, Greater Noida",     lat: 28.4691, lng: 77.4880 },
-  { name: "Sector 62, Noida",            lat: 28.6304, lng: 77.3721 },
-  { name: "Sector 18, Noida",            lat: 28.5708, lng: 77.3261 },
-  { name: "Botanical Garden, Noida",     lat: 28.5638, lng: 77.3347 }
+  { name: "ITS Engineering College Campus, Knowledge Park 3, Greater Noida", lat: 28.46821, lng: 77.48685 },
+  { name: "Alpha I Commercial Belt, Greater Noida", lat: 28.4750, lng: 77.5150 },
+  { name: "Jagat Farm Market, Greater Noida", lat: 28.4800, lng: 77.5200 },
+  { name: "Pari Chowk, Greater Noida", lat: 28.52768, lng: 77.52684 },
+  { name: "Knowledge Park 2, Greater Noida", lat: 28.4550, lng: 77.5000 }
 ];
 
 /* Freshness levels (Slide: Freshness Tracking) */
@@ -29,44 +31,77 @@ function freshnessLevel(msLeft) {
 }
 const LEVEL_LABEL = { normal: "Normal", priority: "Priority", urgent: "Urgent", expired: "Expired" };
 
-/* Seed listings. expiresInMin is counted from the moment the demo data is (re)set,
-   so the freshness clocks always look alive. OTPs are donor-side private codes. */
+/* Seed listings — the original project's five live drops.
+   Time left = the original's safe window minus time already passed since preparation,
+   counted from the moment the demo data is (re)set so the clocks always look alive. */
 function seedListings(now) {
   const m = 60000;
   return [
-    { id: "L1", donor: "Hotel GreenLeaf", donorType: "Hotel / Hall Manager",
-      items: "Rice, Dal, Mixed Vegetables", type: "Cooked Meal", servings: 120, weightKg: 30,
-      packaging: "Sealed food boxes", point: 0, otp: "4831", status: "Available",
-      createdAt: now - 5 * m, expiresAt: now + 135 * m, dispatch: null },
-    { id: "L2", donor: "Sharma Banquet Hall", donorType: "Event Host (one-time)",
-      items: "Wedding Feast - Puri, Aloo Sabzi, Kheer", type: "Cooked Meal", servings: 200, weightKg: 50,
-      packaging: "Large steel containers", point: 3, otp: "7290", status: "Available",
-      createdAt: now - 18 * m, expiresAt: now + 42 * m, dispatch: null },
-    { id: "L3", donor: "City Bakery", donorType: "Store / Bakery",
-      items: "Bread, Buns, Cream Cakes", type: "Bakery", servings: 60, weightKg: 12,
-      packaging: "Paper boxes", point: 1, otp: "3156", status: "Available",
-      createdAt: now - 40 * m, expiresAt: now + 12 * m, dispatch: null },
-    { id: "L4", donor: "Spice Route Restaurant", donorType: "Restaurant",
-      items: "Veg Biryani, Raita", type: "Cooked Meal", servings: 80, weightKg: 20,
-      packaging: "Sealed food boxes", point: 4, otp: "9042", status: "Available",
-      createdAt: now - 10 * m, expiresAt: now + 55 * m, dispatch: null },
-    { id: "L5", donor: "FreshMart Store", donorType: "Store / Bakery",
-      items: "Bananas, Oranges, Tomatoes", type: "Fresh Produce", servings: 90, weightKg: 45,
-      packaging: "Crates", point: 6, otp: "6618", status: "Available",
-      createdAt: now - 30 * m, expiresAt: now + 300 * m, dispatch: null },
-    { id: "L6", donor: "Cafe Delight", donorType: "Restaurant",
-      items: "Sandwiches, Juice Boxes", type: "Packaged Food", servings: 50, weightKg: 10,
-      packaging: "Original packing", point: 2, otp: "2214", status: "Claimed",
-      createdAt: now - 25 * m, expiresAt: now + 25 * m,
-      dispatch: { ngo: DEMO_NGO.name, volunteer: "Ravi Kumar", phone: "98765 43210", vehicle: "Bike", etaMin: 15 } }
+    {
+      id: "EP-101", eventTitle: "ITS Engineering College Annual Fest Surplus",
+      donor: "ITS Engineering College, Greater Noida", donorType: "College Event",
+      phone: "+91 98765 43210", category: "Veg",
+      items: "Shahi Paneer, Dum Biryani, Dal Makhani, 120 Tandoori Rotis, Gulab Jamun",
+      type: "Cooked Hot Meals", servings: 120, weightKg: 45, packaging: "Insulated Warmers",
+      point: 0, otp: "5824", expiresAt: now + 180 * m, status: "Available", dispatch: null,
+      notes: "Enter via Gate 2 Service Bay. Ask for Executive Chef Ramesh.",
+      image: "https://images.unsplash.com/photo-1555244162-803834f70033?w=600"
+    },
+    {
+      id: "EP-102", eventTitle: "Aarav 1st Birthday Celebration Feast",
+      donor: "Priya & Siddharth Sharma", donorType: "Event Host",
+      phone: "+91 98221 11223", category: "Veg",
+      items: "Pav Bhaji, Veg Hakka Noodles, Mini Samosas, Cupcakes, Fruit Punch",
+      type: "Buffet Spread", servings: 50, weightKg: 20, packaging: "Pre-Packed Eco Meal Boxes",
+      point: 1, otp: "9142", expiresAt: now + 180 * m, status: "Available", dispatch: null,
+      notes: "Food is freshly packed in eco boxes ready for distribution.",
+      image: "https://images.unsplash.com/photo-1547573854-74d2a71d0826?w=600"
+    },
+    {
+      id: "EP-103", eventTitle: "Tech Conclave Corporate Buffet",
+      donor: "Jagat Farm Community Centre, Greater Noida", donorType: "Community Centre",
+      phone: "+91 97412 88990", category: "Mixed",
+      items: "Grilled Herb Chicken, Veg Lasagna, Paneer Tikka, Brownies",
+      type: "Buffet Spread", servings: 80, weightKg: 32, packaging: "Insulated Food Containers",
+      point: 2, otp: "3671", expiresAt: now + 100 * m, status: "Claimed",
+      dispatch: { ngo: "Robin Hood Food Relief Chapter", volunteer: "Arjun Verma", phone: "+91 91234 56780", vehicle: "Eco-Van (KA-01-MJ-4491)", etaMin: 15 },
+      notes: "Contact Operations Dock on arrival.",
+      image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600"
+    },
+    {
+      id: "EP-104", eventTitle: "Grand Wedding Reception & Sangeet",
+      donor: "Rajeshwar Rao", donorType: "Event Host",
+      phone: "+91 99001 22334", category: "Veg",
+      items: "Dum Pulao, Paneer Butter Masala, Mixed Dal, Parathas, Jalebi",
+      type: "Cooked Hot Meals", servings: 140, weightKg: 55, packaging: "Insulated Food Warmers",
+      point: 3, otp: "7720", expiresAt: now + 90 * m, status: "Available", dispatch: null,
+      notes: "High quality wedding surplus.",
+      image: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600"
+    },
+    {
+      id: "EP-105", eventTitle: "Knowledge Park 2 Community Weekend Brunch",
+      donor: "Knowledge Park 2 Community Hall, Greater Noida", donorType: "Community Hall",
+      phone: "+91 98450 11998", category: "Mixed",
+      items: "Assorted Pasta, Quiche, Croissants, Salads, Rice Platters",
+      type: "Continental Brunch", servings: 90, weightKg: 35, packaging: "Bakery Trays & Troughs",
+      point: 4, otp: "4912", expiresAt: now + 120 * m, status: "Available", dispatch: null,
+      notes: "Refrigerated holding area.",
+      image: "https://images.unsplash.com/photo-1555244162-803834f70033?w=600"
+    }
   ];
 }
 
-/* Sample platform impact (Slide: Impact Hub) - demo figures, NOT verified results.
-   Weekly bars add up to the 1,240 meals headline figure. */
+/* Impact figures from the original project (sample demo data).
+   Weekly bars are Mon-Sun and sum to the 18,450 meals headline figure. */
 const SAMPLE_IMPACT = {
-  meals: 1240, foodKg: 310, co2Kg: 620,
-  weeklyMeals: [120, 150, 138, 175, 190, 210, 257],
-  weeklyLabels: ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7"],
-  categoryMix: { "Cooked Meal": 55, "Bakery": 15, "Fresh Produce": 18, "Packaged Food": 12 }
+  meals: 18450, foodKg: 7380, co2: 18450,
+  weeklyLabels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  weeklyMeals: [1250, 980, 1420, 2100, 3400, 4850, 4450],
+  categoryMix: { "Cooked Banquets": 52, "Corporate Lunch": 24, "Bakery / Dry": 14, "Packed Meals": 10 }
 };
+
+/* Sample drops for the NGO view's "Simulate Drop" demo button (from the original) */
+const SIMULATE_DROPS = [
+  { eventTitle: "JW Marriott Tech Dinner Buffet", donor: "JW Marriott Banquets", donorType: "Hotel", servings: 90, weightKg: 36, items: "Paneer Butter Masala, Veg Dum Biryani, Rotis, Gulab Jamun" },
+  { eventTitle: "Kapoor Family Sangeet Feast", donor: "Sunil Kapoor", donorType: "Event Host", servings: 60, weightKg: 24, items: "Dal Makhani, Pulao, Paneer Tikka, Mini Samosas, Jalebi" }
+];

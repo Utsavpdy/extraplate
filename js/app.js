@@ -28,7 +28,8 @@ function showView(name) {
 }
 document.querySelectorAll("[data-nav]").forEach(el =>
   el.addEventListener("click", () => showView(el.dataset.nav)));
-$("role-donor").addEventListener("click", () => { ensureAudio(); showView("donor"); });
+$("role-hotel").addEventListener("click", () => { ensureAudio(); showView("donor"); });
+$("role-host").addEventListener("click", () => { ensureAudio(); $("f-donortype").value = "Event Host (one-time)"; showView("donor"); });
 $("role-ngo").addEventListener("click", () => { ensureAudio(); showView("ngo"); });
 
 /* ---------- listing card builders ---------- */
@@ -47,11 +48,14 @@ function metaHTML(l) {
 }
 function headHTML(l) {
   const level = freshnessLevel(l.expiresAt - Date.now());
-  return '<div class="listing-top"><div><h4>' + esc(l.donor) + '</h4>' +
-    '<div class="donor-line">' + esc(l.donorType) + ' • <span class="level-tag" data-level="' + l.id + '">' +
-    LEVEL_LABEL[level] + '</span></div></div>' +
+  const photo = l.image ? '<img class="card-photo" src="' + esc(l.image) + '" alt="" loading="lazy" onerror="this.remove()">' : "";
+  const cat = l.category ? ' • <span class="cat-badge cat-' + esc(l.category) + '">' + esc(l.category).toUpperCase() + "</span>" : "";
+  const notes = l.notes ? '<p class="notes-line">📝 ' + esc(l.notes) + "</p>" : "";
+  return photo + '<div class="listing-top"><div><h4>' + esc(l.eventTitle || l.donor) + '</h4>' +
+    '<div class="donor-line">' + esc(l.donor) + " • " + esc(l.donorType) + ' • <span class="level-tag" data-level="' + l.id + '">' +
+    LEVEL_LABEL[level] + "</span>" + cat + "</div></div>" +
     '<span class="status-tag status-' + l.status + '">' + l.status + "</span></div>" +
-    '<p class="items">' + esc(l.items) + "</p>" + metaHTML(l);
+    '<p class="items">' + esc(l.items) + "</p>" + metaHTML(l) + notes;
 }
 
 /* ---------- DONOR view ---------- */
@@ -74,12 +78,17 @@ function renderDonor() {
 $("listing-form").addEventListener("submit", e => {
   e.preventDefault();
   const servings = parseInt($("f-servings").value, 10);
-  const weight = parseFloat($("f-weight").value) || Math.round(servings * 0.25 * 2) / 2;
+  const weight = parseFloat($("f-weight").value) || Math.round(servings * 0.4 * 2) / 2;
+  const donorName = $("f-donor").value.trim();
   const listing = addListing({
-    donor: $("f-donor").value.trim(), donorType: $("f-donortype").value,
+    eventTitle: $("f-event").value.trim() || (donorName + " Surplus"),
+    donor: donorName, donorType: $("f-donortype").value,
+    phone: $("f-phone").value.trim(), category: $("f-category").value,
     items: $("f-items").value.trim(), type: $("f-type").value,
     servings, weightKg: weight, packaging: $("f-packaging").value,
     point: parseInt($("f-point").value, 10), otp: newOTP(),
+    notes: $("f-notes").value.trim(),
+    image: "https://images.unsplash.com/photo-1555244162-803834f70033?w=600",
     expiresAt: Date.now() + parseInt($("f-window").value, 10) * 60000
   });
   e.target.reset();
@@ -92,9 +101,10 @@ $("f-point").innerHTML = PICKUP_POINTS.map((p, i) => '<option value="' + i + '">
 
 /* ---------- NGO view ---------- */
 let claimTargetId = null;
+let currentZoneKm = 10;
 
 function renderNGO() {
-  const zone = parseFloat($("zone-filter").value);
+  const zone = currentZoneKm;
   renderMap(zone);
   const avail = DB.listings
     .filter(l => l.status === "Available" && listingDistanceKm(l) <= zone)
@@ -122,7 +132,43 @@ function renderNGO() {
   document.querySelectorAll("[data-complete]").forEach(b => b.addEventListener("click", () => completePickup(b.dataset.complete)));
 }
 
-$("zone-filter").addEventListener("change", renderNGO);
+/* zone pills (original project style) */
+document.querySelectorAll("[data-zone]").forEach(p => p.addEventListener("click", () => {
+  document.querySelectorAll("[data-zone]").forEach(x => x.classList.toggle("active", x === p));
+  currentZoneKm = parseFloat(p.dataset.zone);
+  renderNGO();
+}));
+
+/* toolbar tools from the original: test chime, simulate a drop, live GPS location */
+$("test-chime").addEventListener("click", () => { beep(2); showToast("🔊 Chime test", "This is the alert sound an NGO tab plays when new food is posted.", true); });
+
+$("simulate-drop").addEventListener("click", () => {
+  const s = SIMULATE_DROPS[Math.floor(Math.random() * SIMULATE_DROPS.length)];
+  const listing = addListing({
+    eventTitle: s.eventTitle, donor: s.donor, donorType: s.donorType,
+    phone: "+91 98450 " + Math.floor(10000 + Math.random() * 90000), category: "Veg",
+    items: s.items, type: "Cooked Hot Meals",
+    servings: s.servings, weightKg: s.weightKg, packaging: "Insulated Food Containers",
+    point: 4, otp: newOTP(), notes: "Fresh buffet surplus. Ready for pickup.",
+    image: "https://images.unsplash.com/photo-1555244162-803834f70033?w=600",
+    expiresAt: Date.now() + 210 * 60000
+  });
+  renderNGO(); renderDonor();
+  alertNewFood(listing);
+});
+
+$("live-location").addEventListener("click", () => {
+  if (!navigator.geolocation) { showToast("📍 Not supported", "This browser does not share live location."); return; }
+  showToast("📍 Finding you…", "Asking the browser for your live GPS position.");
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      setRadarCentre(pos.coords.latitude, pos.coords.longitude, "Your live location");
+      renderNGO();
+      showToast("📍 Live location set", "The radar now scans around your GPS position. Distances and zones updated.", true);
+    },
+    () => showToast("📍 Location blocked", "Permission was not given, so the radar stays centred on Knowledge Park 2, Greater Noida.")
+  );
+});
 
 function openClaim(id) {
   claimTargetId = id;
@@ -131,17 +177,21 @@ function openClaim(id) {
   $("claim-modal").classList.remove("hidden");
 }
 $("claim-cancel").addEventListener("click", () => $("claim-modal").classList.add("hidden"));
+/* NGO choices in the claim form come from the verified directory */
+$("c-ngo").innerHTML = NGOS.map(n => '<option>' + esc(n.name) + "</option>").join("");
+
 $("claim-form").addEventListener("submit", e => {
   e.preventDefault();
+  const ngoName = $("c-ngo").value;
   updateListing(claimTargetId, {
     status: "Claimed",
-    dispatch: { ngo: DEMO_NGO.name, volunteer: $("c-name").value.trim(), phone: $("c-phone").value.trim(),
-                vehicle: $("c-vehicle").value, etaMin: parseInt($("c-eta").value, 10) }
+    dispatch: { ngo: ngoName, volunteer: $("c-name").value.trim(), phone: $("c-phone").value.trim(),
+                vehicle: $("c-vehicle").value.trim(), etaMin: parseInt($("c-eta").value, 10) }
   });
   $("claim-modal").classList.add("hidden");
   e.target.reset();
   renderNGO(); renderDonor();
-  showToast("✋ Food claimed", "Volunteer dispatched. The listing is now locked for " + DEMO_NGO.name + ".", true);
+  showToast("✋ Food claimed", "Volunteer dispatched. The listing is now locked for " + ngoName + ".", true);
 });
 
 function completePickup(id) {
@@ -156,6 +206,7 @@ function completePickup(id) {
     renderNGO(); renderDonor(); renderImpact();
     showToast("🎉 Pickup completed!", l.servings + " meals rescued from " + l.donor + ". Handover verified by OTP.", true);
     beep(1);
+    openCertificate(l);
   } else {
     showToast("❌ Wrong OTP", "The code does not match the donor's OTP. Pickup not completed.");
     input.value = "";
@@ -208,6 +259,18 @@ $("reset-demo").addEventListener("click", () => {
   renderDonor(); if (mapReady) renderNGO(); renderImpact();
   showToast("↺ Demo reset", "Sample listings and counters restored.", true);
 });
+
+/* ---------- donation certificate (original feature: 80G-style CSR certificate) ---------- */
+function openCertificate(l) {
+  $("cert-donor").textContent = l.donor;
+  $("cert-event").textContent = l.eventTitle || "";
+  $("cert-servings").textContent = l.servings + " Meals Rescued (~" + l.weightKg + " kg)";
+  $("cert-ngo").textContent = (l.dispatch && l.dispatch.ngo) || "Verified NGO Rescue Network";
+  $("cert-date").textContent = new Date().toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" });
+  $("cert-modal").classList.remove("hidden");
+}
+$("cert-close").addEventListener("click", () => $("cert-modal").classList.add("hidden"));
+$("cert-print").addEventListener("click", () => window.print());
 
 /* ---------- first render ---------- */
 renderDonor();

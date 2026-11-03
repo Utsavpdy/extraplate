@@ -17,7 +17,15 @@ function listingLatLng(l) {
 
 function listingDistanceKm(l) {
   const c = listingLatLng(l);
-  return haversineKm(DEMO_NGO.lat, DEMO_NGO.lng, c.lat, c.lng);
+  return haversineKm(DEMO_CENTRE.lat, DEMO_CENTRE.lng, c.lat, c.lng);
+}
+
+/* "Use my live location" — move the radar centre to the visitor's GPS position */
+let lastZoneKm = 10;
+function setRadarCentre(lat, lng, label) {
+  DEMO_CENTRE.lat = lat; DEMO_CENTRE.lng = lng;
+  if (label) DEMO_CENTRE.name = label;
+  if (radarMap) { radarMap.setView([lat, lng], 12); renderMap(lastZoneKm); }
 }
 
 function pinIcon(letter, cls) {
@@ -26,7 +34,7 @@ function pinIcon(letter, cls) {
 
 function initMap() {
   if (radarMap || typeof L === "undefined") return;
-  radarMap = L.map("map").setView([DEMO_NGO.lat, DEMO_NGO.lng], 11);
+  radarMap = L.map("map").setView([DEMO_CENTRE.lat, DEMO_CENTRE.lng], 11);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap contributors"
   }).addTo(radarMap);
@@ -35,15 +43,16 @@ function initMap() {
 
 function renderMap(zoneKm) {
   if (!radarMap) return;
+  lastZoneKm = zoneKm;
   radarLayer.clearLayers();
   if (zoneCircle) { radarMap.removeLayer(zoneCircle); zoneCircle = null; }
 
-  const ngoMarker = L.marker([DEMO_NGO.lat, DEMO_NGO.lng], { icon: pinIcon("N", "ngo") })
-    .bindPopup("<strong>" + DEMO_NGO.name + "</strong><br>" + DEMO_NGO.area + "<br>Rescue centre (you)");
+  const ngoMarker = L.marker([DEMO_CENTRE.lat, DEMO_CENTRE.lng], { icon: pinIcon("N", "ngo") })
+    .bindPopup("<strong>NGO Rescue Base</strong><br>" + DEMO_CENTRE.name + "<br>Verified NGOs scan from here (you)");
   radarLayer.addLayer(ngoMarker);
 
   if (zoneKm && zoneKm < 900) {
-    zoneCircle = L.circle([DEMO_NGO.lat, DEMO_NGO.lng], {
+    zoneCircle = L.circle([DEMO_CENTRE.lat, DEMO_CENTRE.lng], {
       radius: zoneKm * 1000, color: "#FC8019", weight: 1.5, fillColor: "#FC8019", fillOpacity: 0.05
     }).addTo(radarMap);
   }
@@ -54,7 +63,7 @@ function renderMap(zoneKm) {
     if (zoneKm && zoneKm < 900 && d > zoneKm) return;
     const left = Math.max(0, Math.round((l.expiresAt - Date.now()) / 60000));
     L.marker([c.lat, c.lng], { icon: pinIcon("F", "food") })
-      .bindPopup("<strong>" + l.donor + "</strong><br>" + l.items + "<br>" +
+      .bindPopup("<strong>" + (l.eventTitle || l.donor) + "</strong><br>" + l.donor + "<br>" + l.items + "<br>" +
                  l.servings + " servings • " + d.toFixed(1) + " km away<br>Time left: ~" + left + " min")
       .addTo(radarLayer);
   });

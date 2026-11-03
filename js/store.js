@@ -1,7 +1,7 @@
 /* ExtraPlate - store.js : saving data (LocalStorage) + tabs talking to each other (BroadcastChannel).
    This is the State & Sync layer of the architecture: no server, no database - the browser is the store. */
 
-const DB_KEY = "extraplate_db_v1";
+const DB_KEY = "extraplate_db_v2";
 const channel = ("BroadcastChannel" in window) ? new BroadcastChannel("extraplate_channel") : null;
 
 let DB = null;
