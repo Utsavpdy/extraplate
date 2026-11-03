@@ -140,6 +140,38 @@ main{flex:1;width:100%;max-width:1180px;margin:0 auto;padding:22px 18px 40px}
 .toast span{font-size:13px;color:#C9CCD4}
 @keyframes slidein{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
 
+/* ---------- v2 additions: zone pills, photos, badges, leaderboard, certificate ---------- */
+.toolbar-label{font-weight:700;font-size:14px}
+.zone-pills{display:flex;gap:8px;flex-wrap:wrap}
+.zone-pill{border:1.5px solid var(--line);background:#fff;color:#3D4152;border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:600;cursor:pointer;transition:.15s}
+.zone-pill:hover{border-color:var(--orange);color:var(--orange-dark)}
+.zone-pill.active{background:var(--orange);border-color:var(--orange);color:#fff}
+.toolbar-tools{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.btn.small{padding:8px 13px;font-size:13.5px}
+.card-photo{width:100%;height:150px;object-fit:cover;border-radius:12px;margin-bottom:12px;display:block}
+.cat-badge{font-size:10.5px;font-weight:800;letter-spacing:.6px;padding:2.5px 8px;border-radius:999px;vertical-align:1px}
+.cat-Veg{background:#E6F6EC;color:var(--green)}
+.cat-Mixed{background:#FFF1E2;color:var(--orange-dark)}
+.notes-line{font-size:13px;color:var(--muted);margin-top:6px}
+.lb-row{display:flex;justify-content:space-between;gap:10px;padding:9px 2px;border-bottom:1px solid #F0F0F3;font-size:14px}
+.lb-row:last-child{border-bottom:none}
+.lb-row strong{color:var(--orange-dark);white-space:nowrap}
+.dir-item{padding:9px 2px;border-bottom:1px solid #F0F0F3;font-size:14px}
+.dir-item:last-child{border-bottom:none}
+.dir-item div{color:var(--muted);font-size:13px;margin-top:2px}
+.cert-box{max-width:480px}
+.cert{border:2.5px solid var(--orange);border-radius:14px;padding:22px 20px;text-align:center;background:linear-gradient(180deg,#FFF9F2,#fff)}
+.cert-badge{font-size:38px}
+.cert-kicker{font-weight:800;font-size:19px;margin-top:4px;color:#282C3F}
+.cert-sub{color:var(--muted);font-size:13.5px;margin-top:10px}
+.cert h3{font-size:21px;margin:4px 0 2px}
+.cert-event{font-weight:700;color:var(--orange-dark);font-size:15px}
+.cert-servings{font-size:17px;font-weight:800;color:var(--green);margin:8px 0 12px}
+.cert-meta{border-top:1.5px dashed var(--line);padding-top:10px;font-size:13px;color:#3D4152;display:flex;flex-direction:column;gap:3px}
+.cert-id{font-weight:700;color:var(--orange-dark)}
+.cert-note{font-size:11.5px;color:var(--faint);margin-top:10px}
+@media print{body *{visibility:hidden}.cert,.cert *{visibility:visible}.cert{position:fixed;inset:20px}}
+
 /* ---------- footer : Swiggy-style dark footer ---------- */
 footer{border-top:1px solid #1D1F27;background:#282C3F;color:#E8E9ED;text-align:center;padding:18px 14px 22px;margin-top:10px}
 footer p{font-size:14px}
