@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExtraPlate — Smart Surplus Food Rescue &amp; Sharing Platform</title>
+<meta name="description" content="ExtraPlate connects surplus food from hotels, banquets and events to nearby NGOs, so good food reaches people instead of the dustbin.">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand" data-nav="home">
+    <div class="brand-badge">🍽️</div>
+    <div class="brand-text">
+      <div class="brand-name">Extra<span>Plate</span></div>
+      <div class="brand-tag">Rescue Surplus. Reduce Waste. Feed More.</div>
+    </div>
+  </div>
+  <nav class="mainnav">
+    <button class="nav-btn active" data-nav="home">Home</button>
+    <button class="nav-btn" data-nav="donor">Donor</button>
+    <button class="nav-btn" data-nav="ngo">NGO Radar</button>
+    <button class="nav-btn" data-nav="impact">Impact Hub</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ============ HOME / ROLE SELECT ============ -->
+  <section id="view-home" class="view active">
+    <div class="hero">
+      <h1>Good food should feed people,<br>not fill a <span class="red">dustbin</span>.</h1>
+      <p class="hero-sub">ExtraPlate is a digital bridge between surplus food and the people who can put it to good use.
+      Hotels, banquet halls, caterers and event hosts post extra food — nearby NGOs discover it by distance and
+      freshness, claim it, and complete the pickup with an OTP check.</p>
+      <div class="steps">
+        <div class="step-card"><div class="step-num">1</div><h3>Donate</h3><p>Donors post surplus food with servings, packaging and a safe-time window.</p></div>
+        <div class="step-arrow">→</div>
+        <div class="step-card"><div class="step-num">2</div><h3>Discover</h3><p>NGOs find nearby listings on the Rescue Radar, filtered by distance zone and time left.</p></div>
+        <div class="step-arrow">→</div>
+        <div class="step-card"><div class="step-num">3</div><h3>Rescue</h3><p>A volunteer collects the food and the handover is confirmed with a private 4-digit OTP.</p></div>
+      </div>
+      <h2 class="choose-title">Choose your role to enter the demo</h2>
+      <div class="role-cards">
+        <button class="role-card donor" id="role-donor">
+          <div class="role-icon">🏨</div>
+          <h3>I am a Donor</h3>
+          <p>Hotel / hall manager or event host with surplus food to give.</p>
+          <span class="role-cta">Open Donor Portal →</span>
+        </button>
+        <button class="role-card ngo" id="role-ngo">
+          <div class="role-icon">🤝</div>
+          <h3>I am an NGO</h3>
+          <p>Rescue team looking for nearby food to collect and serve.</p>
+          <span class="role-cta">Open Rescue Radar →</span>
+        </button>
+      </div>
+      <p class="demo-note">📍 Demo area: Greater Noida • Demo NGO: <strong>Helping Hands Foundation</strong> •
+      Open this page in two tabs (Donor + NGO) to see live cross-tab alerts.</p>
+    </div>
+  </section>
+
+  <!-- ============ DONOR PORTAL ============ -->
+  <section id="view-donor" class="view">
+    <div class="page-head">
+      <h2>🏨 Donor Portal</h2>
+      <p>Post surplus food in under a minute. Your private pickup OTP appears on your listing — share it only at handover time.</p>
+    </div>
+    <div class="grid-2">
+      <form id="listing-form" class="panel form-panel">
+        <h3>➕ Post New Food Listing</h3>
+        <label>Donor / Organisation name
+          <input type="text" id="f-donor" required placeholder="e.g. Hotel GreenLeaf">
+        </label>
+        <label>Donor type
+          <select id="f-donortype">
+            <option>Hotel / Hall Manager</option>
+            <option>Event Host (one-time)</option>
+            <option>Caterer</option>
+            <option>Restaurant</option>
+            <option>Store / Bakery</option>
+          </select>
+        </label>
+        <label>Food items
+          <input type="text" id="f-items" required placeholder="e.g. Rice, Dal, Mixed Vegetables">
+        </label>
+        <div class="form-row">
+          <label>Food type
+            <select id="f-type">
+              <option>Cooked Meal</option>
+              <option>Bakery</option>
+              <option>Fresh Produce</option>
+              <option>Packaged Food</option>
+            </select>
+          </label>
+          <label>Packaging
+            <select id="f-packaging">
+              <option>Sealed food boxes</option>
+              <option>Large steel containers</option>
+              <option>Paper boxes</option>
+              <option>Crates</option>
+              <option>Original packing</option>
+            </select>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Can feed (servings)
+            <input type="number" id="f-servings" required min="1" max="5000" placeholder="120">
+          </label>
+          <label>Approx. weight (kg)
+            <input type="number" id="f-weight" min="0" step="0.5" placeholder="auto: servings × 0.25">
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Safe for (minutes)
+            <input type="number" id="f-window" required min="5" max="1440" placeholder="90">
+          </label>
+          <label>Pickup point (demo locations)
+            <select id="f-point"></select>
+          </label>
+        </div>
+        <button type="submit" class="btn primary big">📢 Post Food Listing</button>
+        <p class="form-hint">A private 4-digit OTP is generated automatically for the pickup check.</p>
+      </form>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>📋 Active Listings</h3>
+          <span class="count-chip" id="donor-count">0 active</span>
+        </div>
+        <div id="donor-listings" class="listing-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ NGO RADAR ============ -->
+  <section id="view-ngo" class="view">
+    <div class="page-head">
+      <h2>🤝 NGO Rescue Radar — Helping Hands Foundation</h2>
+      <p>Live map of surplus food around you. Filter by distance zone, claim a listing, send a volunteer, and complete the pickup with the donor's OTP.</p>
+    </div>
+    <div class="toolbar">
+      <label>Distance zone:
+        <select id="zone-filter">
+          <option value="3">3 km</option>
+          <option value="10" selected>10 km</option>
+          <option value="20">20 km</option>
+          <option value="30">30 km</option>
+          <option value="50">50 km</option>
+          <option value="999">All zones</option>
+        </select>
+      </label>
+      <span class="toolbar-note">🟢 N = NGO &nbsp; 🔴 F = Food listing &nbsp;•&nbsp; Urgent food is listed first</span>
+    </div>
+    <div id="map"></div>
+    <div class="grid-2 mt">
+      <div class="panel">
+        <div class="panel-head"><h3>🍲 Available Food Near You</h3><span class="count-chip" id="ngo-count">0</span></div>
+        <div id="ngo-listings" class="listing-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>🚴 My Rescues (Claimed by Helping Hands)</h3><span class="count-chip" id="rescue-count">0</span></div>
+        <div id="my-rescues" class="listing-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ IMPACT HUB ============ -->
+  <section id="view-impact" class="view">
+    <div class="page-head">
+      <h2>🌍 City Impact Hub</h2>
+      <p>What the platform achieves, in numbers. <strong>All headline figures are sample demo data</strong> — they show the design, not verified results.</p>
+    </div>
+    <div class="stat-cards">
+      <div class="stat-card"><div class="stat-icon">🍛</div><div class="stat-num" id="stat-meals">0</div><div class="stat-label">Meals Saved</div></div>
+      <div class="stat-card"><div class="stat-icon">⚖️</div><div class="stat-num" id="stat-kg">0</div><div class="stat-label">Food Saved (kg)</div></div>
+      <div class="stat-card"><div class="stat-icon">🌱</div><div class="stat-num" id="stat-co2">0</div><div class="stat-label">CO₂ Saved (kg)</div></div>
+      <div class="stat-card session"><div class="stat-icon">✅</div><div class="stat-num" id="stat-session">0</div><div class="stat-label">Meals Rescued in This Demo Session</div></div>
+    </div>
+    <div class="grid-2 mt">
+      <div class="panel"><h3>📈 Meals Saved — Last 7 Weeks (sample)</h3><canvas id="chart-weekly" height="220"></canvas></div>
+      <div class="panel"><h3>🥗 Types of Food Saved (sample)</h3><canvas id="chart-category" height="220"></canvas></div>
+    </div>
+    <div class="panel mt center">
+      <p class="form-hint">Demo relation used: 1 meal ≈ 0.25 kg food • saving 1 kg of food avoids ≈ 2 kg CO₂.</p>
+      <button class="btn ghost" id="reset-demo">↺ Reset Demo Data</button>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p><strong>ExtraPlate</strong> — Smart Surplus Food Rescue &amp; Sharing Platform • Mini Project Demo</p>
+  <p class="foot-small">Front-end prototype: data stays in your browser (LocalStorage). No server, no real database. OTP and impact figures are demo mechanisms with sample data.</p>
+  <p class="foot-small">Team: Utsav Pandey • Utkarsh Raj • Tejas Mani Tripathi &nbsp;|&nbsp; Guide: Mr. Abhishek Shivhare &nbsp;|&nbsp; CSE, I.T.S Engineering College, Greater Noida</p>
+</footer>
+
+<!-- Claim modal -->
+<div id="claim-modal" class="modal hidden">
+  <div class="modal-box">
+    <h3>🚴 Claim &amp; Send Volunteer</h3>
+    <p id="claim-for" class="modal-sub"></p>
+    <form id="claim-form">
+      <label>Volunteer name <input type="text" id="c-name" required placeholder="e.g. Ravi Kumar"></label>
+      <label>Volunteer phone <input type="tel" id="c-phone" required placeholder="e.g. 98765 43210"></label>
+      <div class="form-row">
+        <label>Vehicle
+          <select id="c-vehicle"><option>Bike</option><option>Cycle</option><option>Auto</option><option>Van</option><option>Car</option></select>
+        </label>
+        <label>Will reach in (minutes) <input type="number" id="c-eta" required min="1" max="600" placeholder="20"></label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" id="claim-cancel">Cancel</button>
+        <button type="submit" class="btn primary">Confirm Claim</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/store.js"></script>
+<script src="js/notifications.js"></script>
+<script src="js/map.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
