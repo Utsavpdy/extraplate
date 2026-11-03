@@ -1,5 +1,7 @@
 # ExtraPlate — Smart Surplus Food Rescue & Sharing Platform
 
+> **v2:** Content and features ported from the original project demo (foodnxt.netlify.app) — real event listings (ITS Fest, Aarav Birthday, Tech Conclave, Wedding at Pari Chowk, KP-2 Brunch), the verified NGO directory (Robin Hood Food Relief Chapter, Akshaya Feed India Trust, Hope Haven Shelter & Kitchen), original impact figures (18,450 meals / 7,380 kg / 18,450 kg CO2), Top Donors leaderboard, donation certificate with 80G note, Simulate Drop, zone pills and live-location radar centred on Knowledge Park 2, Greater Noida.
+
 **Rescue Surplus. Reduce Waste. Feed More.**
 
 A front-end web demo that connects surplus food from hotels, banquet halls, caterers and
