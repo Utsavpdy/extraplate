@@ -1808,6 +1808,17 @@ main.app-content {
             </div>
           </div>
         </div>
+            <!-- Viva Demo quick steps -->
+      <section style="margin-top:2.5rem;background:#fff1f2;border:1px solid #fecdd3;border-radius:1rem;padding:1.25rem;box-shadow:var(--shadow-subtle);">
+        <h2 style="margin-bottom:0.5rem;">🎓 Viva Demo \u2014 Full Flow in 2 Minutes</h2>
+        <div style="font-size:0.92rem;color:#334155;line-height:1.9;">
+          <div><strong>1.</strong> Login as <strong>Hotel</strong> \u2192 open a food listing \u2192 note: <strong>no OTP yet</strong></div>
+          <div><strong>2.</strong> Click <strong>Switch Role</strong> (top right)</div>
+          <div><strong>3.</strong> Login as <strong>NGO</strong> \u2192 <strong>Claim</strong> the same food for pickup</div>
+          <div><strong>4.</strong> \U0001f510 <strong>OTP generates at this moment</strong> \u2192 it appears in the donor\'s portal only</div>
+          <div><strong>5.</strong> Enter the OTP at pickup \u2192 rescue completes \u2192 <strong>donor certificate</strong> is generated</div>
+        </div>
+      </section>
             <!-- City Impact Hub (home) -->
       <section style="margin-top:2.5rem;background:white;border:1px solid var(--border-color);border-radius:1rem;padding:1.25rem;box-shadow:var(--shadow-subtle);">
         <h2 style="margin-bottom:0.25rem;">📊 City Impact Hub — Greater Noida</h2>
@@ -2392,15 +2403,10 @@ const SEED_DATA = {
       preparedTime: new Date(Date.now() - 110 * 60 * 1000).toISOString(),
       seedOffsetMinutes: 110,
       expiryHours: 3.5,
-      status: "claimed",
-      claimedByNgo: "Robin Hood Food Relief Chapter",
-      volunteer: {
-        name: "Arjun Verma",
-        phone: "+91 91234 56780",
-        vehicle: "Eco-Van (KA-01-MJ-4491)",
-        eta: "15 mins"
-      },
-      otp: "3671",
+      status: "available",
+      claimedByNgo: null,
+      volunteer: null,
+      otp: null,
       notes: "Contact Operations Dock on arrival.",
       image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600"
     },
@@ -2679,7 +2685,7 @@ window.notifications = new NotificationEngine();
 
 class Store {
   constructor() {
-    this.STORAGE_KEY = 'EXTRAPLATE_STATE_V2';
+    this.STORAGE_KEY = 'EXTRAPLATE_STATE_V3';
     this.channel = null;
     this.liveLocation = false; // true only after a successful browser geolocation fix
     this.listeners = [];
@@ -3755,6 +3761,12 @@ class ExtraPlateApp {
     });
 
     this.closeModal('modal-claim-food');
+    window.notifications.notify({
+      title: '🔐 OTP Generated!',
+      message: 'A 4-digit pickup OTP has just been generated for this food. It is visible only in the donor\'s portal \u2014 the driver must ask the donor for it at the venue.',
+      type: 'success',
+      sound: 'success'
+    });
     window.notifications.notify({
       title: 'Pickup Assigned!',
       message: `Driver dispatched. When arriving at the venue, ask the host for their 4-digit OTP to complete handoff.`,
