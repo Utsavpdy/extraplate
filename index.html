@@ -1588,6 +1588,20 @@ main.app-content {
   transform: translateX(0);
 }
 
+/* Permanent food-location name labels on map pins */
+.pin-label {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.25);
+  border-radius: 6px;
+  color: #0f172a;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+.pin-label::before { display: none; }
+.labels-off .pin-label { display: none !important; }
+
 </style>
   <style>
 /* ==========================================================================
@@ -2403,10 +2417,10 @@ const SEED_DATA = {
       preparedTime: new Date(Date.now() - 110 * 60 * 1000).toISOString(),
       seedOffsetMinutes: 110,
       expiryHours: 3.5,
-      status: "available",
-      claimedByNgo: null,
-      volunteer: null,
-      otp: null,
+      status: "claimed",
+      claimedByNgo: "Robin Hood Food Relief Chapter",
+      volunteer: "Arjun Mehta",
+      otp: "4317", // OTP was generated when the NGO claimed this listing
       notes: "Contact Operations Dock on arrival.",
       image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600"
     },
@@ -2475,10 +2489,10 @@ const SEED_DATA = {
       preparedTime: new Date(Date.now() - 70 * 60 * 1000).toISOString(),
       seedOffsetMinutes: 70,
       expiryHours: 4,
-      status: "available",
-      claimedByNgo: null,
-      volunteer: null,
-      otp: null,
+      status: "claimed",
+      claimedByNgo: "Akshaya Feed India Trust",
+      volunteer: "Sana Khan",
+      otp: "7264", // OTP was generated when the NGO claimed this listing
       notes: "Collect from banquet kitchen gate.",
       image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600"
     },
@@ -2547,10 +2561,10 @@ const SEED_DATA = {
       preparedTime: new Date(Date.now() - 95 * 60 * 1000).toISOString(),
       seedOffsetMinutes: 95,
       expiryHours: 4.5,
-      status: "available",
-      claimedByNgo: null,
-      volunteer: null,
-      otp: null,
+      status: "claimed",
+      claimedByNgo: "Hope Haven Shelter & Kitchen",
+      volunteer: "Rohit Yadav",
+      otp: "9352", // OTP was generated when the NGO claimed this listing
       notes: "Call host on arrival at main gate.",
       image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600"
     },
@@ -2829,7 +2843,7 @@ window.notifications = new NotificationEngine();
 
 class Store {
   constructor() {
-    this.STORAGE_KEY = 'EXTRAPLATE_STATE_V4';
+    this.STORAGE_KEY = 'EXTRAPLATE_STATE_V5';
     this.channel = null;
     this.liveLocation = false; // true only after a successful browser geolocation fix
     this.listeners = [];
@@ -3076,11 +3090,18 @@ class FoodRescueMap {
       maxZoom: 19
     });
     let tileErrors = 0;
+    let tilesLoaded = 0;
+    osm.on('tileload', () => { tilesLoaded += 1; });
     osm.on('tileerror', () => {
       tileErrors += 1;
       if (tileErrors >= 4 && map.hasLayer(osm)) { map.removeLayer(osm); carto.addTo(map); }
     });
     osm.addTo(map);
+    // Slow-network rescue: if OSM tiles hang without loading (common on mobile
+    // data), switch to CARTO after a few seconds instead of a grey map.
+    setTimeout(() => {
+      if (tilesLoaded === 0 && map.hasLayer(osm)) { map.removeLayer(osm); carto.addTo(map); }
+    }, 3500);
 
     this.markersLayers[elementId] = L.layerGroup().addTo(map);
     this.radiusLayers[elementId] = L.layerGroup().addTo(map);
@@ -3202,7 +3223,13 @@ class FoodRescueMap {
     });
     radiusGroup.addLayer(zoneCircle);
 
+    // Name labels help up to the 20 km zone; beyond that the pins are spread
+    // across a whole district and labels would collide — the list below the
+    // map still names every food location there.
+    map.getContainer().classList.toggle('labels-off', selectedZoneKm > 20);
+
     // 3. Filter and Render Food Drops within the Zone
+    let pinIndex = 0;
     listings.forEach(item => {
       if (!item.coordinates) return;
       const [lat, lng] = item.coordinates;
@@ -3245,6 +3272,16 @@ class FoodRescueMap {
         });
 
         const m = L.marker([lat, lng], { icon: customPin });
+        // Permanent name label so every food location is readable on the map
+        // at a glance, even before any pin is tapped. Short name (before the
+        // first comma), alternating above/below the pin to avoid collisions.
+        const labelDir = (pinIndex++ % 2 === 0) ? 'top' : 'bottom';
+        m.bindTooltip(item.hostName.split(',')[0], {
+          permanent: true,
+          direction: labelDir,
+          offset: labelDir === 'top' ? [0, -22] : [0, 22],
+          className: 'pin-label'
+        });
         m.bindPopup(`
           <div style="font-family: inherit; font-size: 13px; max-width: 220px; line-height: 1.4;">
             <strong style="font-size: 14px; color: #0f172a; display:block;">${item.eventTitle}</strong>
