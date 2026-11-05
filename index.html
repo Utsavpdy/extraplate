@@ -1896,6 +1896,7 @@ main.app-content {
             <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
               <button class="btn btn-secondary btn-sm" onclick="window.rescueMap.requestLiveLocation()">📍 Use my live location</button>
               <button class="btn btn-secondary btn-sm" onclick="window.rescueMap.centerOnUser('portal_hotel-map')">Re-center</button>
+              <button class="btn btn-secondary btn-sm" onclick="window.rescueMap.useDemoCentre()">🏫 Demo Centre</button>
               <span class="live-location-badge" style="align-self:center;font-size:0.78rem;font-weight:700;color:#059669;">📍 Centre: Knowledge Park 2, Greater Noida</span>
             </div>
           </div>
@@ -1951,6 +1952,7 @@ main.app-content {
             <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
               <button class="btn btn-secondary btn-sm" onclick="window.rescueMap.requestLiveLocation()">📍 Use my live location</button>
               <button class="btn btn-secondary btn-sm" onclick="window.rescueMap.centerOnUser('portal_host-map')">Re-center</button>
+              <button class="btn btn-secondary btn-sm" onclick="window.rescueMap.useDemoCentre()">🏫 Demo Centre</button>
               <span class="live-location-badge" style="align-self:center;font-size:0.78rem;font-weight:700;color:#059669;">📍 Centre: Knowledge Park 2, Greater Noida</span>
             </div>
           </div>
@@ -2009,6 +2011,7 @@ main.app-content {
             <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
               <button class="btn btn-secondary btn-sm" onclick="window.rescueMap.requestLiveLocation()">📍 Use my live location</button>
               <button class="btn btn-secondary btn-sm" onclick="window.rescueMap.centerOnUser('portal_ngo-map')">Re-center</button>
+              <button class="btn btn-secondary btn-sm" onclick="window.rescueMap.useDemoCentre()">🏫 Demo Centre</button>
               <span class="live-location-badge" style="align-self:center;font-size:0.78rem;font-weight:700;color:#059669;">📍 Centre: Knowledge Park 2, Greater Noida</span>
             </div>
           </div>
@@ -3008,6 +3011,19 @@ class Store {
             item.preparedTime = new Date(Date.now() - item.seedOffsetMinutes * 60 * 1000).toISOString();
           }
         });
+        // Guard: a saved live-GPS centre far from every food drop (e.g. the
+        // visitor opened the site from another city) would leave the map and
+        // feed empty forever. Reset such a centre to the Demo Centre.
+        if (state.userLocation && (state.listings || []).length) {
+          const distKm = (a, b, c, d) => {
+            const R = 6371, dLa = (c - a) * Math.PI / 180, dLo = (d - b) * Math.PI / 180;
+            const h = Math.sin(dLa / 2) ** 2 + Math.cos(a * Math.PI / 180) * Math.cos(c * Math.PI / 180) * Math.sin(dLo / 2) ** 2;
+            return 2 * R * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+          };
+          const anyNear = state.listings.some(l => l.coordinates &&
+            distKm(state.userLocation[0], state.userLocation[1], l.coordinates[0], l.coordinates[1]) <= 50);
+          if (!anyNear) state.userLocation = [28.46243, 77.49474];
+        }
         return state;
       }
     } catch (e) {
@@ -3223,12 +3239,10 @@ class FoodRescueMap {
       zoomControl: true
     });
 
-    // Primary tiles: OpenStreetMap. If a PC/network blocks OSM tiles, fall back
-    // to CARTO's basemap automatically instead of leaving a blank map.
-    // Primary tiles: CARTO Voyager (fast global CDN, proper street map with
-    // roads and place names). Some networks in India block or stall the
-    // OpenStreetMap tile server, which left the map grey — so OSM is now the
-    // fallback instead of the primary.
+    // Tile providers, tried in order until one actually loads: CARTO Voyager
+    // (fast CDN street map) → OpenStreetMap → Esri World Street Map. Some
+    // networks block or stall one server; the chain makes sure the map is
+    // grey only if every provider is unreachable.
     const carto = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
       maxZoom: 19
@@ -3237,25 +3251,40 @@ class FoodRescueMap {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       maxZoom: 19
     });
-    let tileErrors = 0;
-    let tilesLoaded = 0;
-    carto.on('tileload', () => { tilesLoaded += 1; });
-    carto.on('tileerror', () => {
-      tileErrors += 1;
-      if (tileErrors >= 4 && map.hasLayer(carto)) { map.removeLayer(carto); osm.addTo(map); }
+    const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, OpenStreetMap contributors',
+      maxZoom: 19
     });
+    const tileChain = [carto, osm, esri];
+    const armTileFallback = (idx) => {
+      const layer = tileChain[idx];
+      if (!layer) return;
+      let errors = 0, loaded = 0;
+      layer.on('tileload', () => { loaded += 1; });
+      layer.on('tileerror', () => {
+        errors += 1;
+        if (errors >= 4 && map.hasLayer(layer) && tileChain[idx + 1]) {
+          map.removeLayer(layer); tileChain[idx + 1].addTo(map); armTileFallback(idx + 1);
+        }
+      });
+      setTimeout(() => {
+        if (loaded === 0 && map.hasLayer(layer) && tileChain[idx + 1]) {
+          map.removeLayer(layer); tileChain[idx + 1].addTo(map); armTileFallback(idx + 1);
+        }
+      }, 3500);
+    };
     carto.addTo(map);
-    // Slow-network rescue: if CARTO tiles hang without loading, switch to OSM
-    // after a few seconds instead of leaving a grey map.
-    setTimeout(() => {
-      if (tilesLoaded === 0 && map.hasLayer(carto)) { map.removeLayer(carto); osm.addTo(map); }
-    }, 3500);
+    armTileFallback(0);
 
     this.markersLayers[elementId] = L.layerGroup().addTo(map);
     this.radiusLayers[elementId] = L.layerGroup().addTo(map);
     this.maps[elementId] = map;
 
-    this.detectUserLocation();
+    // Demo centre by default: do NOT auto-jump to the visitor's GPS on load —
+    // all demo food drops are around Knowledge Park 2, and a far-away or
+    // inaccurate GPS fix would leave the map and feed empty. Live GPS stays
+    // available on demand via the "Use my live location" button.
+    this.updateLocationStatus('📍 Centre: Knowledge Park 2, Greater Noida (Demo Centre). Tap “Use my live location” to switch to your live GPS.');
     this.renderLocalityZone(elementId);
   }
 
@@ -3273,6 +3302,17 @@ class FoodRescueMap {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const coords = [pos.coords.latitude, pos.coords.longitude];
+        // Guard: if the live fix is somewhere with no demo food at all
+        // (far away, or a bad indoor fix), stay on the Demo Centre instead
+        // of showing an empty map and an empty feed.
+        const listings = window.foodStore.state.listings || [];
+        const anyNear = listings.some(l => l.coordinates &&
+          this.calcDistanceKm(coords[0], coords[1], l.coordinates[0], l.coordinates[1]) <= 50);
+        if (!anyNear) {
+          this.useFallbackLocation();
+          this.updateLocationStatus('⚠️ No food drops within 50 km of your live location — showing Demo Centre: Knowledge Park 2, Greater Noida instead. All demo food is around this centre.');
+          return;
+        }
         window.foodStore.setLiveLocation(coords);
         this.updateLocationStatus(`📍 Live location ON — ${coords[0].toFixed(5)}, ${coords[1].toFixed(5)} (±${Math.round(pos.coords.accuracy || 0)} m). Distances are from where you are right now.`);
         this.refreshAll();
@@ -3294,6 +3334,13 @@ class FoodRescueMap {
   // Re-ask the browser for GPS (used by the 'Use my live location' buttons).
   requestLiveLocation() {
     this.detectUserLocation();
+  }
+
+  // Jump back to the Demo Centre (used by the 'Demo Centre' buttons and the
+  // empty-feed rescue button).
+  useDemoCentre() {
+    this.useFallbackLocation();
+    this.updateLocationStatus('📍 Centre: Knowledge Park 2, Greater Noida (Demo Centre). All demo food drops are around this centre.');
   }
 
   // Continuous live tracking: after the first fix, keep following the device
@@ -3827,6 +3874,10 @@ class ExtraPlateApp {
           <h4 style="color: #334155;">No Surplus Food in this Distance Zone</h4>
           <p style="color: #64748b; font-size: 0.85rem; margin-top: 0.3rem;">
             Try increasing the distance zone above (e.g. 20 km, 30 km, 50 km) or simulate a drop.
+          </p>
+          <button class="btn btn-primary btn-sm" style="margin-top: 0.8rem;" onclick="window.rescueMap.useDemoCentre(); window.foodStore.setZoneKm(50);">📍 Show all food — Demo Centre (50 km)</button>
+          <p style="color: #94a3b8; font-size: 0.78rem; margin-top: 0.6rem;">
+            If your live GPS location is far from Greater Noida, the demo food will not appear around it — this button jumps back to the Demo Centre where all the food is.
           </p>
         </div>
       `;
