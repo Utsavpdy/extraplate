@@ -1,298 +1,3179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ExtraPlate — Smart Surplus Food Rescue &amp; Sharing Platform</title>
-<meta name="description" content="ExtraPlate connects surplus food from hotels, banquets and events to nearby NGOs, so good food reaches people instead of the dustbin.">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExtraPlate - Real-Time Surplus Food Rescue</title>
+  
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  
+  <!-- Custom Design System Styles -->
+  <style>
+/* ==========================================================================
+   ExtraPlate - Core Design System & Theme Styles
+   ========================================================================== */
+
+:root {
+  /* Brand Red Palette (Matching Logo & Badge) */
+  --primary-50: #fff1f2;
+  --primary-100: #ffe4e6;
+  --primary-200: #fecdd3;
+  --primary-300: #fda4af;
+  --primary-400: #fb7185;
+  --primary-500: #f43f5e;
+  --primary-600: #e11d48; /* Main Brand Red */
+  --primary-700: #be123c;
+  --primary-800: #9f1239;
+  --primary-900: #881337;
+  --primary-gradient: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  --primary-glow: 0 8px 25px -4px rgba(225, 29, 72, 0.35);
+
+  /* Dark Slate Surfaces */
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --slate-950: #090d16;
+
+  /* Accents */
+  --accent-emerald: #10b981;
+  --accent-emerald-light: #ecfdf5;
+  --accent-amber: #f59e0b;
+  --accent-amber-light: #fffbeb;
+  --accent-blue: #3b82f6;
+  --accent-blue-light: #eff6ff;
+
+  /* UI Tokens */
+  --bg-app: #f8fafc;
+  --bg-card: #ffffff;
+  --border-color: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+
+  /* Radii & Shadows */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+  --radius-full: 9999px;
+
+  --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -2px rgba(15, 23, 42, 0.04);
+  --shadow-hover: 0 16px 28px -6px rgba(15, 23, 42, 0.09), 0 8px 12px -4px rgba(15, 23, 42, 0.04);
+
+  --transition-smooth: 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-spring: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Reset & Typography */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: var(--slate-900);
+  letter-spacing: -0.02em;
+}
+
+h1 { font-size: 2.15rem; }
+h2 { font-size: 1.6rem; }
+h3 { font-size: 1.2rem; }
+h4 { font-size: 1rem; }
+
+p {
+  color: var(--slate-600);
+}
+
+.app-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Top Notification Strip */
+.top-strip {
+  background: var(--slate-950);
+  color: #ffffff;
+  padding: 0.45rem 1rem;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.top-strip-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(225, 29, 72, 0.2);
+  color: #fda4af;
+  border: 1px solid rgba(225, 29, 72, 0.35);
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pulse-red {
+  width: 7px;
+  height: 7px;
+  background-color: var(--primary-600);
+  border-radius: 50%;
+  animation: pulse-glow-red 1.6s infinite;
+}
+
+/* Navbar */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.75rem 0;
+  transition: all var(--transition-smooth);
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.brand-logo-img {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+}
+
+.brand-badge-img {
+  height: 36px;
+  width: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(225, 29, 72, 0.2);
+}
+
+/* User Session Pill in Navbar */
+.user-session-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--slate-100);
+  border: 1px solid var(--border-color);
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-full);
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--slate-800);
+}
+
+.user-session-pill .role-badge {
+  background: var(--primary-600);
+  color: #ffffff;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+/* Main Views */
+main.app-content {
+  flex: 1;
+  padding: 2rem 0 4rem;
+}
+
+.view-page {
+  display: none;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.view-page.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Footer */
+.app-footer {
+  background: var(--slate-950);
+  color: var(--slate-400);
+  padding: 2.5rem 0 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.875rem;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-copy {
+  text-align: center;
+  padding-top: 1.5rem;
+  color: var(--slate-500);
+  font-size: 0.78rem;
+}
+
+</style>
+  <style>
+/* ==========================================================================
+   ExtraPlate - UI Components (Welcome Landing, Login, Zones, Secret OTP)
+   ========================================================================== */
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-smooth);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: var(--primary-gradient);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #be123c 0%, #9f1239 100%);
+  box-shadow: 0 6px 18px rgba(225, 29, 72, 0.35);
+  color: #ffffff;
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: var(--slate-700);
+  border-color: var(--slate-200);
+  box-shadow: var(--shadow-subtle);
+}
+
+.btn-secondary:hover {
+  background: var(--slate-50);
+  border-color: var(--slate-300);
+  color: var(--slate-900);
+}
+
+.btn-dark {
+  background: var(--slate-900);
+  color: #ffffff;
+}
+
+.btn-dark:hover {
+  background: var(--slate-950);
+}
+
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-lg {
+  padding: 0.85rem 1.75rem;
+  font-size: 1.05rem;
+  border-radius: var(--radius-lg);
+}
+
+.btn-sim {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 500;
+  transition: all var(--transition-smooth);
+}
+
+.btn-sim:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ==========================================================================
+   WELCOME HOME SCREEN
+   ========================================================================== */
+.welcome-hero {
+  text-align: center;
+  max-width: 860px;
+  margin: 1rem auto 2.5rem;
+}
+
+.welcome-badge-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.welcome-app-icon {
+  width: 100px;
+  height: 100px;
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgba(225, 29, 72, 0.25);
+  animation: float-badge 3s ease-in-out infinite;
+}
+
+.welcome-title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--slate-900);
+  margin-bottom: 1rem;
+}
+
+.welcome-title span.red-text {
+  color: var(--primary-600);
+  background: linear-gradient(135deg, #e11d48, #fb7185);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.welcome-subtitle {
+  font-size: 1.15rem;
+  color: var(--slate-600);
+  max-width: 680px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* 3 Main Role Action Cards */
+.role-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto 3rem;
+}
+
+.role-entry-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-2xl);
+  padding: 2.25rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-spring);
+  box-shadow: var(--shadow-subtle);
+}
+
+.role-entry-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--primary-400);
+  box-shadow: var(--shadow-hover), var(--primary-glow);
+}
+
+.role-entry-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--primary-gradient);
+  opacity: 0;
+  transition: opacity var(--transition-smooth);
+}
+
+.role-entry-card:hover::after {
+  opacity: 1;
+}
+
+.role-icon-box {
+  width: 58px;
+  height: 58px;
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 1.25rem;
+  transition: transform var(--transition-spring);
+}
+
+.role-entry-card:hover .role-icon-box {
+  transform: scale(1.1);
+}
+
+.icon-box-hotel { background: var(--accent-amber-light); color: var(--accent-amber); }
+.icon-box-ngo { background: var(--accent-blue-light); color: var(--accent-blue); }
+.icon-box-host { background: var(--primary-100); color: var(--primary-700); }
+
+.role-tag-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  margin-bottom: 0.75rem;
+}
+
+.role-card-heading {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  margin-bottom: 0.4rem;
+}
+
+.role-card-text {
+  font-size: 0.9rem;
+  color: var(--slate-500);
+  line-height: 1.5;
+  margin-bottom: 1.75rem;
+  flex: 1;
+}
+
+.role-card-btn-action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--slate-50);
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-lg);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--slate-800);
+  transition: all var(--transition-smooth);
+}
+
+.role-entry-card:hover .role-card-btn-action {
+  background: var(--primary-600);
+  color: #ffffff;
+  border-color: var(--primary-600);
+}
+
+@media (max-width: 960px) {
+  .role-entry-grid {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+}
+
+/* ==========================================================================
+   ROLE PORTAL HEADER & ACTIONS
+   ========================================================================== */
+.portal-hero {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-2xl);
+  padding: 1.75rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.portal-hero-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  margin-bottom: 0.35rem;
+}
+
+.portal-hero-desc {
+  font-size: 0.925rem;
+  color: var(--slate-600);
+}
+
+/* Distance Locality Zones */
+.zone-filter-bar {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  box-shadow: var(--shadow-subtle);
+}
+
+.zone-pills-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  overflow-x: auto;
+}
+
+.zone-pill {
+  padding: 0.35rem 0.85rem;
+  font-size: 0.825rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--slate-200);
+  background: var(--slate-50);
+  color: var(--slate-600);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-smooth);
+}
+
+.zone-pill:hover, .zone-pill.active {
+  background: var(--primary-600);
+  color: #ffffff;
+  border-color: var(--primary-600);
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.25);
+}
+
+/* Secret OTP Vault Card for Hotels / Hosts */
+.private-otp-vault {
+  background: linear-gradient(135deg, #090d16 0%, #0f172a 100%);
+  color: #ffffff;
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  border: 1px solid var(--slate-800);
+  box-shadow: var(--shadow-hover);
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.private-otp-code-box {
+  background: rgba(0, 0, 0, 0.45);
+  border: 2px dashed var(--primary-500);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.5rem;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.private-otp-digits {
+  font-family: 'Courier New', monospace;
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: 0.35em;
+  color: #ffffff;
+}
+
+/* Minimal Listings Card Grid */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 860px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.food-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-subtle);
+  transition: all var(--transition-smooth);
+  display: flex;
+  flex-direction: column;
+}
+
+.food-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary-300);
+}
+
+.food-card-img-wrap {
+  height: 140px;
+  width: 100%;
+  position: relative;
+  background-color: var(--slate-200);
+  overflow: hidden;
+}
+
+.food-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.food-card-overlay-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 2;
+}
+
+.food-card-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.food-card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--slate-900);
+  line-height: 1.3;
+}
+
+.food-card-loc {
+  font-size: 0.825rem;
+  color: var(--slate-500);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.2rem;
+}
+
+.food-card-spec-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  background: var(--slate-50);
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.825rem;
+  border: 1px solid var(--slate-200);
+}
+
+.food-card-footer {
+  padding: 0.85rem 1.25rem;
+  background: var(--slate-50);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-available {
+  background: var(--primary-100);
+  color: var(--primary-700);
+  border: 1px solid var(--primary-300);
+}
+
+.badge-urgent {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  animation: pulse-urgent-subtle 1.5s infinite;
+}
+
+.badge-claimed {
+  background: var(--accent-blue-light);
+  color: var(--accent-blue);
+  border: 1px solid #bfdbfe;
+}
+
+.badge-completed {
+  background: var(--accent-emerald-light);
+  color: var(--accent-emerald);
+  border: 1px solid #a7f3d0;
+}
+
+/* Modals */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 13, 22, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  transition: opacity var(--transition-smooth);
+}
+
+.modal-backdrop.active {
+  display: flex;
+  opacity: 1;
+}
+
+.modal-card {
+  background: #ffffff;
+  border-radius: var(--radius-2xl);
+  max-width: 540px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color);
+  transform: scale(0.96);
+  transition: transform var(--transition-smooth);
+}
+
+.modal-backdrop.active .modal-card {
+  transform: scale(1);
+}
+
+.modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  z-index: 10;
+}
+
+.modal-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--slate-900);
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--slate-400);
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1.15rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background: var(--slate-50);
+}
+
+/* Forms */
+.form-group {
+  margin-bottom: 1.15rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--slate-700);
+  margin-bottom: 0.35rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  border: 1px solid var(--slate-300);
+  border-radius: var(--radius-md);
+  outline: none;
+  background: #ffffff;
+  transition: all var(--transition-smooth);
+}
+
+.form-control:focus {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+}
+
+/* Toast Container */
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-width: 380px;
+  width: calc(100% - 3rem);
+}
+
+.toast {
+  background: #ffffff;
+  border-left: 4px solid var(--primary-600);
+  border-radius: var(--radius-lg);
+  padding: 0.9rem 1.15rem;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  transform: translateX(120%);
+  transition: transform var(--transition-smooth);
+  border-top: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.toast.show {
+  transform: translateX(0);
+}
+
+</style>
+  <style>
+/* ==========================================================================
+   ExtraPlate - Animations & GPS Radar Waves
+   ========================================================================== */
+
+@keyframes pulse-glow-red {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 7px rgba(225, 29, 72, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(225, 29, 72, 0);
+  }
+}
+
+@keyframes pulse-urgent-subtle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.88;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes float-badge {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* User's GPS Location Radar Pulse on Map */
+.gps-user-marker {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.gps-dot {
+  width: 16px;
+  height: 16px;
+  background: #2563eb;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.5);
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 2;
+}
+
+.gps-pulse-ring {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.35);
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: gps-ripple 2s infinite ease-out;
+}
+
+@keyframes gps-ripple {
+  0% {
+    transform: scale(0.6);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* Print Certificate Rules */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .certificate-preview, .certificate-preview * {
+    visibility: visible;
+  }
+  .certificate-preview {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  .modal-footer, .modal-header, .top-strip, .navbar, .app-footer {
+    display: none !important;
+  }
+}
+
+</style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="brand" data-nav="home">
-    <div class="brand-badge">🍽️</div>
-    <div class="brand-text">
-      <div class="brand-name">Extra<span>Plate</span></div>
-      <div class="brand-tag">Rescue Surplus. Reduce Waste. Feed More.</div>
-    </div>
-  </div>
-  <nav class="mainnav">
-    <button class="nav-btn active" data-nav="home">Home</button>
-    <button class="nav-btn" data-nav="donor">Donor</button>
-    <button class="nav-btn" data-nav="ngo">NGO Radar</button>
-    <button class="nav-btn" data-nav="impact">Impact Hub</button>
-  </nav>
-</header>
-
-<main>
-
-  <!-- ============ HOME / ROLE SELECT ============ -->
-  <section id="view-home" class="view active">
-    <div class="hero">
-      <h1>Good food should feed people,<br>not fill a <span class="red">dustbin</span>.</h1>
-      <p class="hero-sub">ExtraPlate is a digital bridge between surplus food and the people who can put it to good use.
-      It connects surplus food from weddings, banquets and hotels around <strong>Knowledge Park 2, Greater Noida</strong>
-      with verified local NGOs — donors post extra food, NGOs discover it by distance and freshness, claim it,
-      and complete the pickup with an OTP check.</p>
-      <div class="steps">
-        <div class="step-card"><div class="step-num">1</div><h3>Donate</h3><p>Donors post surplus food with servings, packaging and a safe-time window.</p></div>
-        <div class="step-arrow">→</div>
-        <div class="step-card"><div class="step-num">2</div><h3>Discover</h3><p>NGOs find nearby listings on the Rescue Radar, filtered by distance zone and time left.</p></div>
-        <div class="step-arrow">→</div>
-        <div class="step-card"><div class="step-num">3</div><h3>Rescue</h3><p>A volunteer collects the food and the handover is confirmed with a private 4-digit OTP.</p></div>
+  <!-- Top Real-Time Simulation Strip -->
+  <aside class="top-strip">
+    <div class="app-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <div class="top-strip-left">
+        <div class="live-pill">
+          <span class="pulse-red"></span>
+          <span>Live Food Rescue Network</span>
+        </div>
+        <span style="font-size: 0.78rem; opacity: 0.85;">
+          Cross-Tab Real-time Broadcast Active • Open in 2 tabs to test live sync
+        </span>
       </div>
-      <h2 class="choose-title">Choose your role to enter the demo</h2>
-      <div class="role-cards">
-        <button class="role-card donor" id="role-hotel">
-          <div class="role-icon">🏨</div>
-          <h3>Hotels, Banquets &amp; Caterers</h3>
-          <p>Donate excess food from conferences, daily buffets and banquet receptions. Receive official 80G tax benefit certificates.</p>
-          <span class="role-cta">Login as Hotel / Venue Manager →</span>
+      <div class="top-strip-actions">
+        <button class="btn-sim" onclick="window.app.simulateSurplusDrop()" title="Simulate a new surplus food drop">
+          🍲 Simulate Drop
         </button>
-        <button class="role-card ngo" id="role-ngo">
-          <div class="role-icon">🤝</div>
-          <h3>NGOs &amp; Rescue Squads</h3>
-          <p>View live surplus food drops in your locality zones (3 km, 10 km, 20 km, 30 km, 50 km), dispatch rescue drivers, and enter the host's secret OTP on pickup.</p>
-          <span class="role-cta">Login as NGO Rescuer →</span>
+        <button class="btn-sim" onclick="window.app.simulateNgoClaim()" title="Simulate an NGO claiming food">
+          🚚 Simulate Claim
         </button>
-        <button class="role-card host" id="role-host">
-          <div class="role-icon">🎉</div>
-          <h3>Individual Event Hosts</h3>
-          <p>Hosting a wedding, birthday, anniversary or family gathering? Broadcast leftover meals to nearby volunteers in 60 seconds.</p>
-          <span class="role-cta">Login as Event Host →</span>
+        <button class="btn-sim" onclick="window.foodStore.resetAllData()" title="Reset mock data" style="background: rgba(255,255,255,0.08);">
+          🔄 Reset
         </button>
       </div>
-      <p class="demo-note">📍 Demo area: Knowledge Park 2, Greater Noida • Verified NGOs: <strong>Robin Hood Food Relief Chapter • Akshaya Feed India Trust • Hope Haven Shelter &amp; Kitchen</strong> •
-      Open this page in two tabs (Donor + NGO) to see live cross-tab alerts.</p>
     </div>
-  </section>
+  </aside>
 
-  <!-- ============ DONOR PORTAL ============ -->
-  <section id="view-donor" class="view">
-    <div class="page-head">
-      <h2>🏨 Donor Portal</h2>
-      <p>Post surplus food in under a minute. Your private pickup OTP appears on your listing — share it only at handover time.</p>
+  <!-- Sticky Navbar -->
+  <header class="navbar">
+    <div class="app-container">
+      <div class="navbar-inner">
+        <!-- Logo -->
+        <div class="brand-wrapper" onclick="window.app.logout()">
+          <img src="app_badge.png" alt="ExtraPlate Badge" class="brand-badge-img">
+          <img src="logo.png" alt="ExtraPlate Logo" class="brand-logo-img">
+        </div>
+
+        <!-- Session status or navigation -->
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div id="navbar-user-session" class="user-session-pill" style="display: none;">
+            <span class="role-badge" id="session-role-text">Hotel</span>
+            <span id="session-phone-text" style="color: #475569; font-size: 0.78rem;">+91 98765 43210</span>
+            <button class="btn btn-secondary btn-sm" onclick="window.app.logout()" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">
+              Switch Role
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="grid-2">
-      <form id="listing-form" class="panel form-panel">
-        <h3>➕ Post New Food Listing</h3>
-        <label>Event title
-          <input type="text" id="f-event" placeholder="e.g. Grand Banquet Dinner / Wedding Reception">
-        </label>
-        <label>Donor / Organisation name
-          <input type="text" id="f-donor" required placeholder="e.g. Hotel GreenLeaf">
-        </label>
-        <div class="form-row">
-          <label>Donor type
-            <select id="f-donortype">
-              <option>Hotel / Hall Manager</option>
-              <option>Event Host (one-time)</option>
-              <option>Caterer</option>
-              <option>Restaurant</option>
-              <option>Store / Bakery</option>
-            </select>
-          </label>
-          <label>Phone
-            <input type="tel" id="f-phone" placeholder="+91 98765 43210">
-          </label>
+  </header>
+
+  <!-- Main Content Views -->
+  <main class="app-content">
+    <div class="app-container">
+
+      <!-- ==========================================
+           1. WELCOME HOME PAGE (Welcome + Logo/Banner + 3 Role Buttons)
+           ========================================== -->
+      <section id="view-home" class="view-page active">
+        <div class="welcome-hero">
+          <div class="welcome-badge-wrap">
+            <img src="app_badge.png" alt="ExtraPlate App" class="welcome-app-icon">
+          </div>
+          <h1 class="welcome-title">
+            Welcome to <span class="red-text">ExtraPlate</span>
+          </h1>
+          <p class="welcome-subtitle">
+            Connecting surplus food from weddings, banquets and hotels around Knowledge Park 2, Greater Noida with verified local NGOs. Select your role to login with your phone number and get started:
+          </p>
         </div>
-        <label>Food items
-          <input type="text" id="f-items" required placeholder="e.g. Paneer Butter Masala, Veg Pulao, Dal Makhani, 80 Rotis">
-        </label>
-        <div class="form-row">
-          <label>Food type
-            <select id="f-type">
-              <option>Cooked Hot Meals</option>
-              <option>Buffet Spread</option>
-              <option>Bakery</option>
-              <option>Fresh Produce</option>
-              <option>Packaged Food</option>
-            </select>
-          </label>
-          <label>Category
-            <select id="f-category">
-              <option>Veg</option>
-              <option>Mixed</option>
-            </select>
-          </label>
+
+        <!-- 3 Distinct Role Entry Cards/Buttons -->
+        <div class="role-entry-grid">
+          <!-- Button 1: Hotels, Banquets & Venues -->
+          <div class="role-entry-card" data-entry-role="hotel">
+            <div class="role-icon-box icon-box-hotel">🏨</div>
+            <span class="role-tag-pill" style="background: var(--accent-amber-light); color: var(--accent-amber);">Commercial & Venues</span>
+            <h3 class="role-card-heading">Hotels, Banquets & Caterers</h3>
+            <p class="role-card-text">
+              Login to donate excess food from corporate conferences, daily hotel buffets, and banquet receptions. Receive a donation certificate for your CSR records.
+            </p>
+            <div class="role-card-btn-action">
+              <span>Login as Hotel / Venue Manager</span>
+              <span>→</span>
+            </div>
+          </div>
+
+          <!-- Button 2: NGOs & Relief Volunteers -->
+          <div class="role-entry-card" data-entry-role="ngo">
+            <div class="role-icon-box icon-box-ngo">🤝</div>
+            <span class="role-tag-pill" style="background: var(--accent-blue-light); color: var(--accent-blue);">Food Banks & Shelters</span>
+            <h3 class="role-card-heading">NGOs & Rescue Squads</h3>
+            <p class="role-card-text">
+              Login to view live surplus food drops in your locality zones (3km, 10km, 20km, 30km, 50km), dispatch rescue drivers, and enter the host's secret OTP on pickup.
+            </p>
+            <div class="role-card-btn-action">
+              <span>Login as NGO Rescuer</span>
+              <span>→</span>
+            </div>
+          </div>
+
+          <!-- Button 3: Individual Event Hosts -->
+          <div class="role-entry-card" data-entry-role="host">
+            <div class="role-icon-box icon-box-host">🎉</div>
+            <span class="role-tag-pill" style="background: var(--primary-100); color: var(--primary-700);">Personal Celebrations</span>
+            <h3 class="role-card-heading">Individual Event Hosts</h3>
+            <p class="role-card-text">
+              Hosting a wedding, birthday party, anniversary, or family gathering? Login to broadcast leftover meals to nearby volunteers in 60 seconds.
+            </p>
+            <div class="role-card-btn-action">
+              <span>Login as Event Host</span>
+              <span>→</span>
+            </div>
+          </div>
         </div>
-        <div class="form-row">
-          <label>Packaging
-            <select id="f-packaging">
-              <option>Insulated Warmers</option>
-              <option>Insulated Food Containers</option>
-              <option>Sealed food boxes</option>
-              <option>Pre-Packed Eco Meal Boxes</option>
-              <option>Large steel containers</option>
-              <option>Original packing</option>
-            </select>
-          </label>
-          <label>Pickup point (demo locations)
-            <select id="f-point"></select>
-          </label>
+            <!-- City Impact Hub (home) -->
+      <section style="margin-top:2.5rem;background:white;border:1px solid var(--border-color);border-radius:1rem;padding:1.25rem;box-shadow:var(--shadow-subtle);">
+        <h2 style="margin-bottom:0.25rem;">📊 City Impact Hub — Greater Noida</h2>
+        <p style="font-size:0.85rem;color:#64748b;margin-bottom:1rem;">Demo figures from the project data. Completing a rescue (OTP verified) adds that listing's meals to these counters.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.25rem;">
+          <div><div style="font-size:1.6rem;font-weight:800;color:#059669;" id="stat-meals">—</div><div style="font-size:0.8rem;color:#64748b;">Meals rescued</div></div>
+          <div><div style="font-size:1.6rem;font-weight:800;color:#059669;" id="stat-kg">—</div><div style="font-size:0.8rem;color:#64748b;">Kg diverted from landfill</div></div>
+          <div><div style="font-size:1.6rem;font-weight:800;color:#059669;" id="stat-co2">—</div><div style="font-size:0.8rem;color:#64748b;">Kg CO₂ prevented</div></div>
         </div>
-        <div class="form-row">
-          <label>Can feed (servings)
-            <input type="number" id="f-servings" required min="1" max="5000" placeholder="120">
-          </label>
-          <label>Approx. weight (kg)
-            <input type="number" id="f-weight" min="0" step="0.5" placeholder="auto: servings × 0.4">
-          </label>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.25rem;">
+          <div><h4 style="font-size:0.9rem;margin-bottom:0.5rem;">Weekly rescued meals</h4><div style="height:220px;"><canvas id="weeklyTrendChart"></canvas></div></div>
+          <div><h4 style="font-size:0.9rem;margin-bottom:0.5rem;">Food category mix</h4><div style="height:220px;"><canvas id="categoryPieChart"></canvas></div></div>
         </div>
-        <div class="form-row">
-          <label>Safe for (minutes)
-            <input type="number" id="f-window" required min="5" max="1440" placeholder="90">
-          </label>
-          <label>Pickup notes (gate, contact person…)
-            <input type="text" id="f-notes" placeholder="e.g. Backstage Gate 2, ask for caterer supervisor">
-          </label>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.25rem;margin-top:1.25rem;">
+          <div><h4 style="font-size:0.9rem;margin-bottom:0.25rem;">🏆 Top donors (by servings)</h4><div id="donor-leaderboard"></div></div>
+          <div><h4 style="font-size:0.9rem;margin-bottom:0.25rem;">🤝 Verified NGO directory</h4><div id="ngo-directory"></div></div>
         </div>
-        <button type="submit" class="btn primary big">📢 Post Food Listing</button>
-        <p class="form-hint">A private 4-digit OTP is generated automatically for the pickup check.</p>
+      </section>
+</section>
+
+
+
+
+      <!-- ==========================================
+           2. HOTEL & BANQUET VENUE PORTAL
+           ========================================== -->
+      <section id="view-portal_hotel" class="view-page">
+        <div class="portal-hero">
+          <div>
+            <span class="badge badge-available" style="margin-bottom: 0.4rem;">🏨 Hotel & Venue Portal</span>
+            <h1 class="portal-hero-title">Commercial Food Donation Dashboard</h1>
+            <p class="portal-hero-desc">
+              Manage your active banquet drops. The 4-digit pickup OTP is shown strictly in this window to share with the arriving NGO driver.
+            </p>
+          </div>
+          <div>
+            <button class="btn btn-primary btn-lg" onclick="window.app.openPostModal('hotel')">
+              🍱 + Post Hotel Buffet Surplus
+            </button>
+          </div>
+        </div>
+
+        <!-- Locality Distance Zones Filter Bar -->
+        <div class="zone-filter-bar">
+          <div style="font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem;">
+            <span>📍 Locality Distance Zones:</span>
+          </div>
+          <div class="zone-pills-group">
+            <button class="zone-pill" data-zone-km="3">Within 3 km</button>
+            <button class="zone-pill active" data-zone-km="10">Within 10 km</button>
+            <button class="zone-pill" data-zone-km="20">Within 20 km</button>
+            <button class="zone-pill" data-zone-km="30">Within 30 km</button>
+            <button class="zone-pill" data-zone-km="50">Within 50 km</button>
+          </div>
+        </div>
+
+        <!-- Live Locality GPS Map -->
+        <div style="background: white; border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 1rem; margin-bottom: 2rem; box-shadow: var(--shadow-subtle);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <div style="font-weight: 700; font-size: 0.95rem;">🗺️ Your Locality GPS Map & Live Drops</div>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <button class="btn btn-secondary btn-sm" onclick="window.rescueMap.requestLiveLocation()">📍 Use my live location</button>
+              <button class="btn btn-secondary btn-sm" onclick="window.rescueMap.centerOnUser('portal_hotel-map')">Re-center</button>
+              <span class="live-location-badge" style="align-self:center;font-size:0.78rem;font-weight:700;color:#059669;">📍 Centre: Knowledge Park 2, Greater Noida</span>
+            </div>
+          </div>
+          <div id="portal_hotel-map" style="height: 380px; width: 100%; border-radius: 0.85rem; border: 1px solid var(--border-color);"></div>
+          <p class="location-status" style="font-size:0.8rem;color:#475569;margin-top:0.6rem;">📍 Centre: Knowledge Park 2, Greater Noida (28.46243, 77.49474). Click “Use my live location” to switch to your live GPS.</p>
+        </div>
+
+        <!-- Active Hotel Listings with Private OTP -->
+        <div style="margin-bottom: 1.25rem;">
+          <h2>Your Hotel's Active Food Drops & Secret OTPs</h2>
+          <p style="font-size: 0.85rem; color: #64748b;">The OTP code below is private. Hand it to the assigned NGO driver upon arrival.</p>
+        </div>
+        <div id="hotel-listings-grid" class="card-grid"></div>
+      </section>
+
+      <!-- ==========================================
+           3. INDIVIDUAL EVENT HOST PORTAL
+           ========================================== -->
+      <section id="view-portal_host" class="view-page">
+        <div class="portal-hero">
+          <div>
+            <span class="badge badge-available" style="margin-bottom: 0.4rem;">🎉 Individual Event Host Portal</span>
+            <h1 class="portal-hero-title">Your Celebration Food Donation</h1>
+            <p class="portal-hero-desc">
+              Leftover food from your wedding or birthday celebration feeds local night shelters. Share your secret OTP only when the volunteer arrives.
+            </p>
+          </div>
+          <div>
+            <button class="btn btn-primary btn-lg" onclick="window.app.openPostModal('host')">
+              🍲 + Post Celebration Food
+            </button>
+          </div>
+        </div>
+
+        <!-- Locality Distance Zones Filter Bar -->
+        <div class="zone-filter-bar">
+          <div style="font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem;">
+            <span>📍 Locality Distance Zones:</span>
+          </div>
+          <div class="zone-pills-group">
+            <button class="zone-pill" data-zone-km="3">Within 3 km</button>
+            <button class="zone-pill active" data-zone-km="10">Within 10 km</button>
+            <button class="zone-pill" data-zone-km="20">Within 20 km</button>
+            <button class="zone-pill" data-zone-km="30">Within 30 km</button>
+            <button class="zone-pill" data-zone-km="50">Within 50 km</button>
+          </div>
+        </div>
+
+        <!-- Live Locality GPS Map -->
+        <div style="background: white; border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 1rem; margin-bottom: 2rem; box-shadow: var(--shadow-subtle);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <div style="font-weight: 700; font-size: 0.95rem;">🗺️ Your Locality GPS Map</div>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <button class="btn btn-secondary btn-sm" onclick="window.rescueMap.requestLiveLocation()">📍 Use my live location</button>
+              <button class="btn btn-secondary btn-sm" onclick="window.rescueMap.centerOnUser('portal_host-map')">Re-center</button>
+              <span class="live-location-badge" style="align-self:center;font-size:0.78rem;font-weight:700;color:#059669;">📍 Centre: Knowledge Park 2, Greater Noida</span>
+            </div>
+          </div>
+          <div id="portal_host-map" style="height: 380px; width: 100%; border-radius: 0.85rem; border: 1px solid var(--border-color);"></div>
+          <p class="location-status" style="font-size:0.8rem;color:#475569;margin-top:0.6rem;">📍 Centre: Knowledge Park 2, Greater Noida (28.46243, 77.49474). Click “Use my live location” to switch to your live GPS.</p>
+        </div>
+
+        <!-- Active Host Listings with Private OTP -->
+        <div style="margin-bottom: 1.25rem;">
+          <h2>Your Active Food Drops & Secret OTPs</h2>
+          <p style="font-size: 0.85rem; color: #64748b;">The OTP code below is private. Hand it to the assigned NGO driver upon arrival.</p>
+        </div>
+        <div id="host-listings-grid" class="card-grid"></div>
+      </section>
+
+      <!-- ==========================================
+           4. NGO FOOD RESCUE RADAR PORTAL
+           ========================================== -->
+      <section id="view-portal_ngo" class="view-page">
+        <div class="portal-hero">
+          <div>
+            <span class="badge badge-available" style="margin-bottom: 0.4rem;">🤝 NGO Food Rescue Squad</span>
+            <h1 class="portal-hero-title">Live Surplus Food Locality Radar</h1>
+            <p class="portal-hero-desc">
+              Scan food drops in your locality zones, claim pickups, dispatch drivers, and verify the host's 4-digit OTP upon arrival.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-secondary" onclick="window.notifications.playSound('urgent')">
+              🔊 Test Chime
+            </button>
+            <button class="btn btn-primary" onclick="window.app.simulateSurplusDrop()">
+              + Simulate Local Drop
+            </button>
+          </div>
+        </div>
+
+        <!-- Locality Distance Zones Filter Bar -->
+        <div class="zone-filter-bar">
+          <div style="font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem;">
+            <span>📍 Locality Distance Zones:</span>
+          </div>
+          <div class="zone-pills-group">
+            <button class="zone-pill" data-zone-km="3">Within 3 km</button>
+            <button class="zone-pill active" data-zone-km="10">Within 10 km</button>
+            <button class="zone-pill" data-zone-km="20">Within 20 km</button>
+            <button class="zone-pill" data-zone-km="30">Within 30 km</button>
+            <button class="zone-pill" data-zone-km="50">Within 50 km</button>
+          </div>
+        </div>
+
+        <!-- Live Locality GPS Map -->
+        <div style="background: white; border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 1rem; margin-bottom: 2rem; box-shadow: var(--shadow-subtle);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <div style="font-weight: 700; font-size: 0.95rem;">🗺️ Live Locality GPS Radar</div>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <button class="btn btn-secondary btn-sm" onclick="window.rescueMap.requestLiveLocation()">📍 Use my live location</button>
+              <button class="btn btn-secondary btn-sm" onclick="window.rescueMap.centerOnUser('portal_ngo-map')">Re-center</button>
+              <span class="live-location-badge" style="align-self:center;font-size:0.78rem;font-weight:700;color:#059669;">📍 Centre: Knowledge Park 2, Greater Noida</span>
+            </div>
+          </div>
+          <div id="portal_ngo-map" style="height: 380px; width: 100%; border-radius: 0.85rem; border: 1px solid var(--border-color);"></div>
+          <p class="location-status" style="font-size:0.8rem;color:#475569;margin-top:0.6rem;">📍 Centre: Knowledge Park 2, Greater Noida (28.46243, 77.49474). Click “Use my live location” to switch to your live GPS.</p>
+        </div>
+
+        <!-- NGO Food Drops Feed -->
+        <div style="margin-bottom: 1.25rem;">
+          <h2>Surplus Food Available in Selected Zone</h2>
+          <p style="font-size: 0.85rem; color: #64748b;">Claim a pickup to dispatch a volunteer. (OTPs are not shown publicly — you will ask the host for the OTP upon arrival).</p>
+        </div>
+        <div id="ngo-feed-grid" class="card-grid"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ==========================================
+       MODALS
+       ========================================== -->
+
+  <!-- Modal: Phone Number Login -->
+  <div id="modal-phone-login" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span id="login-role-icon" style="font-size: 1.4rem;">🏨</span>
+          <div id="login-role-title" class="modal-title">Role Login</div>
+        </div>
+        <button class="modal-close-btn" onclick="window.app.closeModal('modal-phone-login')">&times;</button>
+      </div>
+      <form id="phone-login-form">
+        <div class="modal-body">
+          <p style="font-size: 0.875rem; color: #64748b; margin-bottom: 1.25rem;">
+            Enter your mobile number to receive a secure login code and access your personalized portal:
+          </p>
+
+          <div class="form-group">
+            <label class="form-label" for="login-phone-input">Mobile Phone Number</label>
+            <input type="tel" class="form-control" id="login-phone-input" value="+91 98765 43210" placeholder="+91 XXXXX XXXXX" required>
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.6rem; padding: 0.75rem; font-size: 0.8rem; color: #475569; margin-top: 1rem;">
+            🔒 Fast Demo Verification: Clicking below will instantly authenticate you into your role dashboard.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="window.app.closeModal('modal-phone-login')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Verify & Enter Dashboard →</button>
+        </div>
       </form>
+    </div>
+  </div>
 
-      <div class="panel">
-        <div class="panel-head">
-          <h3>📋 Active Listings</h3>
-          <span class="count-chip" id="donor-count">0 active</span>
+  <!-- Modal: Post Surplus Food -->
+  <div id="modal-post-food" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">🍲 Post Surplus Food</div>
+        <button class="modal-close-btn" onclick="window.app.closeModal('modal-post-food')">&times;</button>
+      </div>
+      <form id="post-food-form">
+        <input type="hidden" id="hostTypeInput" name="hostType" value="hotel">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="eventTitle">Event Title / Occasion</label>
+            <input type="text" class="form-control" id="eventTitle" name="eventTitle" placeholder="e.g. Grand Banquet Dinner / Wedding Reception" required>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="hostName">Host / Venue Name</label>
+              <input type="text" class="form-control" id="hostName" name="hostName" placeholder="e.g. Oberoi Banquets / Rajesh Sharma" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="hostPhone">Contact Phone</label>
+              <input type="tel" class="form-control" id="hostPhone" name="hostPhone" placeholder="+91 98765 43210" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="venue">Exact Pickup Venue Address</label>
+            <input type="text" class="form-control" id="venue" name="venue" placeholder="e.g. Grand Ballroom, MG Road Central" required>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="foodType">Food Category</label>
+              <select class="form-control" id="foodType" name="foodType">
+                <option value="Cooked Hot Meals">Cooked Hot Meals</option>
+                <option value="Buffet Spread">Buffet Spread</option>
+                <option value="Bakery & Snacks">Bakery & Snacks</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="category">Dietary Classification</label>
+              <select class="form-control" id="category" name="category">
+                <option value="veg">100% Pure Vegetarian</option>
+                <option value="nonveg">Non-Vegetarian</option>
+                <option value="mixed">Mixed Options</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="items">Food Items Description</label>
+            <textarea class="form-control" id="items" name="items" rows="2" placeholder="e.g. Paneer Butter Masala, Veg Pulao, Dal Makhani, 80 Rotis" required></textarea>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="servings">Servings (People Count)</label>
+              <input type="number" class="form-control" id="servings" name="servings" min="5" value="60" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="expiryHours">Safe Expiry (Hours)</label>
+              <input type="number" class="form-control" id="expiryHours" name="expiryHours" min="1" max="12" step="0.5" value="4" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="packagedType">Packaging Condition</label>
+            <select class="form-control" id="packagedType" name="packagedType">
+              <option value="Insulated Food Warmers">Insulated Warmers</option>
+              <option value="Pre-Packed Meal Boxes">Pre-Packed Meal Boxes</option>
+              <option value="Needs Containers">Needs NGO to bring tubs</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="notes">Special Pickup Gate / Instructions</label>
+            <input type="text" class="form-control" id="notes" name="notes" placeholder="e.g. Backstage Gate 2, ask for caterer supervisor">
+          </div>
         </div>
-        <div id="donor-listings" class="listing-list"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ NGO RADAR ============ -->
-  <section id="view-ngo" class="view">
-    <div class="page-head">
-      <h2>🤝 NGO Rescue Radar</h2>
-      <p>Live map of surplus food around Knowledge Park 2, Greater Noida. Filter by distance zone, claim a listing, send a volunteer, and complete the pickup with the donor's OTP.</p>
-    </div>
-    <div class="toolbar">
-      <span class="toolbar-label">📍 Locality Distance Zones:</span>
-      <div class="zone-pills">
-        <button type="button" class="zone-pill" data-zone="3">Within 3 km</button>
-        <button type="button" class="zone-pill active" data-zone="10">Within 10 km</button>
-        <button type="button" class="zone-pill" data-zone="20">Within 20 km</button>
-        <button type="button" class="zone-pill" data-zone="30">Within 30 km</button>
-        <button type="button" class="zone-pill" data-zone="50">Within 50 km</button>
-        <button type="button" class="zone-pill" data-zone="999">All zones</button>
-      </div>
-      <span class="toolbar-note">🟢 N = NGO &nbsp; 🔴 F = Food listing &nbsp;•&nbsp; Urgent food is listed first</span>
-      <div class="toolbar-tools">
-        <button type="button" class="btn ghost small" id="test-chime">🔊 Test Chime</button>
-        <button type="button" class="btn ghost small" id="simulate-drop">＋ Simulate Local Drop</button>
-        <button type="button" class="btn ghost small" id="live-location">📍 Use My Live Location</button>
-      </div>
-    </div>
-    <div id="map"></div>
-    <div class="grid-2 mt">
-      <div class="panel">
-        <div class="panel-head"><h3>🍲 Available Food Near You</h3><span class="count-chip" id="ngo-count">0</span></div>
-        <div id="ngo-listings" class="listing-list"></div>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><h3>🚴 My Rescues (Claimed by Verified NGOs)</h3><span class="count-chip" id="rescue-count">0</span></div>
-        <div id="my-rescues" class="listing-list"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ IMPACT HUB ============ -->
-  <section id="view-impact" class="view">
-    <div class="page-head">
-      <h2>🌍 City Impact Hub</h2>
-      <p>What the platform achieves, in numbers. <strong>All headline figures are sample demo data</strong> — they show the design, not verified results.</p>
-    </div>
-    <div class="stat-cards">
-      <div class="stat-card"><div class="stat-icon">🍛</div><div class="stat-num" id="stat-meals">0</div><div class="stat-label">Meals Saved</div></div>
-      <div class="stat-card"><div class="stat-icon">⚖️</div><div class="stat-num" id="stat-kg">0</div><div class="stat-label">Food Saved (kg)</div></div>
-      <div class="stat-card"><div class="stat-icon">🌱</div><div class="stat-num" id="stat-co2">0</div><div class="stat-label">CO₂ Saved (kg)</div></div>
-      <div class="stat-card session"><div class="stat-icon">✅</div><div class="stat-num" id="stat-session">0</div><div class="stat-label">Meals Rescued in This Demo Session</div></div>
-    </div>
-    <div class="grid-2 mt">
-      <div class="panel"><h3>📈 Weekly Rescued Meals (sample)</h3><canvas id="chart-weekly" height="220"></canvas></div>
-      <div class="panel"><h3>🥗 Food Category Mix (sample)</h3><canvas id="chart-category" height="220"></canvas></div>
-    </div>
-    <div class="grid-2 mt">
-      <div class="panel"><h3>🏆 Top Donors (by servings)</h3><div id="donor-leaderboard"></div></div>
-      <div class="panel"><h3>🤝 Verified NGO Directory</h3><div id="ngo-directory"></div></div>
-    </div>
-    <div class="panel mt center">
-      <p class="form-hint">Demo relation used (from the original project data): 1 meal ≈ 0.4 kg food • saving 1 kg of food avoids ≈ 2.5 kg CO₂. Completing a rescue (OTP verified) adds that listing's meals to these counters.</p>
-      <button class="btn ghost" id="reset-demo">↺ Reset Demo Data</button>
-    </div>
-  </section>
-
-</main>
-
-<footer>
-  <p><strong>ExtraPlate</strong> — Smart Surplus Food Rescue &amp; Sharing Platform • Mini Project Demo</p>
-  <p class="foot-small">Locality Zones: Within 3 km • Immediate &nbsp;|&nbsp; Within 10 km • Neighborhood &nbsp;|&nbsp; Within 20 km • Metro &nbsp;|&nbsp; Within 30 km • Suburban &nbsp;|&nbsp; Within 50 km • Greater City</p>
-  <p class="foot-small">Security: Private 4-Digit OTPs • Live GPS Geolocation • 80G CSR Certificates</p>
-  <p class="foot-small">Front-end prototype: data stays in your browser (LocalStorage). No server, no real database. OTP and impact figures are demo mechanisms with sample data.</p>
-  <p class="foot-small">Team: Utsav Pandey • Utkarsh Raj • Tejas Mani Tripathi &nbsp;|&nbsp; Guide: Mr. Abhishek Shivhare &nbsp;|&nbsp; CSE, I.T.S Engineering College, Greater Noida</p>
-</footer>
-
-<!-- Claim modal -->
-<div id="claim-modal" class="modal hidden">
-  <div class="modal-box">
-    <h3>🚴 Claim &amp; Send Volunteer</h3>
-    <p id="claim-for" class="modal-sub"></p>
-    <form id="claim-form">
-      <label>Claiming NGO (verified directory)
-        <select id="c-ngo"></select>
-      </label>
-      <label>Volunteer name <input type="text" id="c-name" required placeholder="e.g. Rahul Sharma"></label>
-      <label>Volunteer phone <input type="tel" id="c-phone" required placeholder="e.g. +91 98451 22334"></label>
-      <div class="form-row">
-        <label>Vehicle
-          <input type="text" id="c-vehicle" required placeholder="e.g. Eco-Cargo Van (KA-01-AB-1234)">
-        </label>
-        <label>Will reach in (minutes) <input type="number" id="c-eta" required min="1" max="600" placeholder="15"></label>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn ghost" id="claim-cancel">Cancel</button>
-        <button type="submit" class="btn primary">Confirm Claim</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Donation certificate modal (shown after an OTP-verified pickup) -->
-<div id="cert-modal" class="modal hidden">
-  <div class="modal-box cert-box">
-    <div class="cert">
-      <div class="cert-badge">🏆</div>
-      <div class="cert-kicker">Certificate of Food Donation</div>
-      <p class="cert-sub">This certifies that</p>
-      <h3 id="cert-donor">—</h3>
-      <div class="cert-event" id="cert-event">—</div>
-      <div class="cert-servings" id="cert-servings">—</div>
-      <div class="cert-meta">
-        <div>Recipient: <strong id="cert-ngo">—</strong></div>
-        <div>Date: <span id="cert-date">—</span></div>
-        <div class="cert-id">ExtraPlate Verified • ID: EP-CSR-2026</div>
-      </div>
-      <p class="cert-note">Eligible for 80G tax benefit documentation as per the donor's CSR records.</p>
-    </div>
-    <div class="modal-actions">
-      <button type="button" class="btn ghost" id="cert-print">🖨️ Print / Save PDF</button>
-      <button type="button" class="btn primary" id="cert-close">Done</button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="window.app.closeModal('modal-post-food')">Cancel</button>
+          <button type="submit" class="btn btn-primary">🚀 Broadcast to Local NGOs</button>
+        </div>
+      </form>
     </div>
   </div>
-</div>
 
-<div id="toasts"></div>
+  <!-- Modal: Claim Food -->
+  <div id="modal-claim-food" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">🤝 Claim Food for Collection</div>
+        <button class="modal-close-btn" onclick="window.app.closeModal('modal-claim-food')">&times;</button>
+      </div>
+      <form id="claim-food-form">
+        <div class="modal-body">
+          <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 0.85rem 1rem; margin-bottom: 1rem;">
+            <div id="claim-food-title" style="font-weight: 700; color: #0f172a;">-</div>
+            <div id="claim-food-details" style="font-size: 0.8rem; color: #64748b; margin-top: 0.2rem;">-</div>
+          </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="js/data.js"></script>
-<script src="js/store.js"></script>
-<script src="js/notifications.js"></script>
-<script src="js/map.js"></script>
-<script src="js/charts.js"></script>
-<script src="js/app.js"></script>
+          <div class="form-group">
+            <label class="form-label" for="ngoSelect">Select Claiming NGO Organization</label>
+            <select class="form-control" id="ngoSelect" name="ngoSelect">
+              <option value="NGO-01">Robin Hood Food Relief Chapter</option>
+              <option value="NGO-02">Akshaya Feed India Trust</option>
+              <option value="NGO-03">Hope Haven Shelter & Kitchen</option>
+            </select>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="volunteerName">Assigned Volunteer / Driver</label>
+              <input type="text" class="form-control" id="volunteerName" name="volunteerName" value="Rahul Sharma" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="volunteerPhone">Volunteer Phone</label>
+              <input type="tel" class="form-control" id="volunteerPhone" name="volunteerPhone" value="+91 98451 22334" required>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="vehicle">Vehicle Details</label>
+              <input type="text" class="form-control" id="vehicle" name="vehicle" value="Eco-Cargo Van (KA-01-AB-1234)" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="eta">ETA (Minutes)</label>
+              <input type="number" class="form-control" id="eta" name="eta" min="5" max="120" value="15" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="window.app.closeModal('modal-claim-food')">Cancel</button>
+          <button type="submit" class="btn btn-primary">🚚 Confirm & Dispatch Driver</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Enter Host's OTP on Arrival (For NGO Driver) -->
+  <div id="modal-verify-otp" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">🔑 Enter Host's Pickup OTP</div>
+        <button class="modal-close-btn" onclick="window.app.closeModal('modal-verify-otp')">&times;</button>
+      </div>
+      <form id="otp-verify-form">
+        <div class="modal-body" style="text-align: center;">
+          <p id="verify-event-title" style="font-weight: 700; color: #0f172a; margin-bottom: 0.25rem;">Handoff Verification</p>
+          <p style="font-size: 0.85rem; color: #64748b;">
+            Ask the Hotel Manager or Event Host for their confidential 4-digit pickup code:
+          </p>
+
+          <div style="display: flex; gap: 0.75rem; justify-content: center; margin: 1.5rem 0;">
+            <input type="text" maxlength="1" class="otp-digit-input" style="width: 3.2rem; height: 3.8rem; font-size: 1.7rem; font-weight: 700; text-align: center; border: 2px solid #cbd5e1; border-radius: 0.6rem;" onkeyup="if(this.value.length==1) this.nextElementSibling ? this.nextElementSibling.focus() : null" required>
+            <input type="text" maxlength="1" class="otp-digit-input" style="width: 3.2rem; height: 3.8rem; font-size: 1.7rem; font-weight: 700; text-align: center; border: 2px solid #cbd5e1; border-radius: 0.6rem;" onkeyup="if(this.value.length==1) this.nextElementSibling ? this.nextElementSibling.focus() : null" required>
+            <input type="text" maxlength="1" class="otp-digit-input" style="width: 3.2rem; height: 3.8rem; font-size: 1.7rem; font-weight: 700; text-align: center; border: 2px solid #cbd5e1; border-radius: 0.6rem;" onkeyup="if(this.value.length==1) this.nextElementSibling ? this.nextElementSibling.focus() : null" required>
+            <input type="text" maxlength="1" class="otp-digit-input" style="width: 3.2rem; height: 3.8rem; font-size: 1.7rem; font-weight: 700; text-align: center; border: 2px solid #cbd5e1; border-radius: 0.6rem;" required>
+          </div>
+
+          <div id="otp-error-msg" style="display: none; color: #dc2626; font-size: 0.85rem; font-weight: 600;">Invalid Code</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="window.app.closeModal('modal-verify-otp')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Verify OTP & Complete Pickup</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Certificate -->
+  <div id="modal-certificate" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 620px;">
+      <div class="modal-header">
+        <div class="modal-title">📜 Food Rescue Certificate</div>
+        <button class="modal-close-btn" onclick="window.app.closeModal('modal-certificate')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="certificate-preview" style="background: #fffdfa; border: 4px double #e11d48; border-radius: 1rem; padding: 2rem; text-align: center;">
+          <div style="width: 60px; height: 60px; margin: 0 auto 0.75rem; background: #fff1f2; border: 2px dashed #e11d48; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">🏆</div>
+          <h2 style="color: #be123c; font-size: 1.5rem; margin-bottom: 0.25rem;">Certificate of Food Rescue</h2>
+          <p style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: #e11d48; margin-bottom: 1.25rem;">Food Waste Elimination & Social Contribution</p>
+
+          <p style="font-size: 0.9rem; color: #64748b;">Proudly presented to</p>
+          <h3 id="cert-donor-name" style="font-size: 1.4rem; color: #0f172a; margin: 0.4rem 0;">-</h3>
+          <p style="font-size: 0.85rem; color: #64748b; max-width: 440px; margin: 0 auto 1.25rem;">
+            for preventing edible surplus food from entering landfills and nourishing community members at
+          </p>
+          <div id="cert-event-name" style="font-weight: 700; color: #be123c; margin-bottom: 0.5rem;">-</div>
+          <div id="cert-servings" style="font-size: 1.15rem; font-weight: 800; color: #e11d48; margin-bottom: 1.25rem;">-</div>
+
+          <div style="display: flex; justify-content: space-between; border-top: 1px dashed #e2e8f0; padding-top: 1rem; font-size: 0.78rem; color: #64748b;">
+            <div style="text-align: left;">
+              <div>Recipient: <strong id="cert-ngo-name" style="color: #0f172a;">-</strong></div>
+              <div>Date: <span id="cert-date">-</span></div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 700; color: #e11d48;">ExtraPlate Verified</div>
+              <div>ID: EP-CSR-2026</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="window.print()">🖨️ Print / Save PDF</button>
+        <button class="btn btn-primary" onclick="window.app.closeModal('modal-certificate')">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="app-container">
+      <div class="footer-content">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <img src="logo.png" alt="ExtraPlate Logo" style="height: 32px; filter: brightness(0) invert(1);">
+          <p style="color: #94a3b8; font-size: 0.825rem; max-width: 320px;">
+            Connecting individual celebrations and commercial venues with verified local NGOs across locality distance zones.
+          </p>
+        </div>
+        <div style="display: flex; gap: 2rem;">
+          <div>
+            <div style="color: white; font-weight: 700; margin-bottom: 0.4rem; font-size: 0.85rem;">Locality Zones</div>
+            <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8rem; color: #94a3b8;">
+              <span>Within 3 km &bull; Immediate</span>
+              <span>Within 10 km &bull; Neighborhood</span>
+              <span>Within 20 km &bull; Metro</span>
+              <span>Within 30 km &bull; Suburban</span>
+              <span>Within 50 km &bull; Greater City</span>
+            </div>
+          </div>
+          <div>
+            <div style="color: white; font-weight: 700; margin-bottom: 0.4rem; font-size: 0.85rem;">Security</div>
+            <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8rem; color: #94a3b8;">
+              <span>Private 4-Digit OTPs</span>
+              <span>Live GPS Geolocation</span>
+              <span>Donation Certificates</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-copy">
+        &copy; 2026 ExtraPlate • Sustainable Food Rescue & Redistribution Network
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+/**
+ * ExtraPlate - Seed Data & Initial State
+ */
+
+const SEED_DATA = {
+  currentView: 'home', // 'home' | 'portal_hotel' | 'portal_ngo' | 'portal_host'
+  activeRole: null,    // 'hotel' | 'ngo' | 'host'
+  authSession: null,   // { phone: string, role: string, name: string }
+  selectedZoneKm: 10,  // 3 | 10 | 20 | 30 | 50 (default radius km)
+  userLocation: [28.46243, 77.49474], // Knowledge Park 2, Greater Noida (fallback centre)
+
+  listings: [
+    {
+      id: "EP-101",
+      hostType: "hotel",
+      eventTitle: "ITS Engineering College Annual Fest Surplus",
+      hostName: "ITS Engineering College, Greater Noida",
+      hostPhone: "+91 98765 43210",
+      venue: "ITS Engineering College Campus, Knowledge Park 3, Greater Noida",
+      coordinates: [28.46821, 77.48685], // ~1.0 km from Knowledge Park 2 (Zone: 3km)
+      foodType: "Cooked Hot Meals",
+      category: "veg",
+      items: "Shahi Paneer, Dum Biryani, Dal Makhani, 120 Tandoori Rotis, Gulab Jamun",
+      servings: 120,
+      approxWeightKg: 45,
+      packagedType: "Insulated Warmers",
+      preparedTime: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+      seedOffsetMinutes: 60,
+      expiryHours: 4,
+      status: "available",
+      claimedByNgo: null,
+      volunteer: null,
+      otp: "5824", // Private OTP for The Oberoi
+      notes: "Enter via Gate 2 Service Bay. Ask for Executive Chef Ramesh.",
+      image: "https://images.unsplash.com/photo-1555244162-803834f70033?w=600"
+    },
+    {
+      id: "EP-102",
+      hostType: "host",
+      eventTitle: "Aarav 1st Birthday Celebration Feast",
+      hostName: "Priya & Siddharth Sharma",
+      hostPhone: "+91 98221 11223",
+      venue: "Alpha I Commercial Belt, Greater Noida",
+      coordinates: [28.4750, 77.5150], // ~2.4 km from Knowledge Park 2 (Zone: 3km)
+      foodType: "Buffet Spread",
+      category: "veg",
+      items: "Pav Bhaji, Veg Hakka Noodles, Mini Samosas, Cupcakes, Fruit Punch",
+      servings: 50,
+      approxWeightKg: 20,
+      packagedType: "Pre-Packed Eco Meal Boxes",
+      preparedTime: new Date(Date.now() - 90 * 60 * 1000).toISOString(),
+      seedOffsetMinutes: 90,
+      expiryHours: 4.5,
+      status: "available",
+      claimedByNgo: null,
+      volunteer: null,
+      otp: "9142", // Private OTP for Sharma family
+      notes: "Food is freshly packed in eco boxes ready for distribution.",
+      image: "https://images.unsplash.com/photo-1547573854-74d2a71d0826?w=600"
+    },
+    {
+      id: "EP-103",
+      hostType: "hotel",
+      eventTitle: "Tech Conclave Corporate Buffet",
+      hostName: "Jagat Farm Community Centre, Greater Noida",
+      hostPhone: "+91 97412 88990",
+      venue: "Jagat Farm Market, Greater Noida",
+      coordinates: [28.4800, 77.5200], // ~3.2 km from Knowledge Park 2 (Zone: 10km)
+      foodType: "Buffet Spread",
+      category: "mixed",
+      items: "Grilled Herb Chicken, Veg Lasagna, Paneer Tikka, Brownies",
+      servings: 80,
+      approxWeightKg: 32,
+      packagedType: "Insulated Food Containers",
+      preparedTime: new Date(Date.now() - 110 * 60 * 1000).toISOString(),
+      seedOffsetMinutes: 110,
+      expiryHours: 3.5,
+      status: "claimed",
+      claimedByNgo: "Robin Hood Food Relief Chapter",
+      volunteer: {
+        name: "Arjun Verma",
+        phone: "+91 91234 56780",
+        vehicle: "Eco-Van (KA-01-MJ-4491)",
+        eta: "15 mins"
+      },
+      otp: "3671",
+      notes: "Contact Operations Dock on arrival.",
+      image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600"
+    },
+    {
+      id: "EP-104",
+      hostType: "host",
+      eventTitle: "Grand Wedding Reception & Sangeet",
+      hostName: "Rajeshwar Rao",
+      hostPhone: "+91 99001 22334",
+      venue: "Pari Chowk, Greater Noida",
+      coordinates: [28.52768, 77.52684], // ~7.9 km from Knowledge Park 2 (Zone: 10km)
+      foodType: "Cooked Hot Meals",
+      category: "veg",
+      items: "Dum Pulao, Paneer Butter Masala, Mixed Dal, Parathas, Jalebi",
+      servings: 140,
+      approxWeightKg: 55,
+      packagedType: "Insulated Food Warmers",
+      preparedTime: new Date(Date.now() - 150 * 60 * 1000).toISOString(),
+      seedOffsetMinutes: 150,
+      expiryHours: 4,
+      status: "available",
+      claimedByNgo: null,
+      volunteer: null,
+      otp: "7720",
+      notes: "High quality wedding surplus.",
+      image: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600"
+    },
+    {
+      id: "EP-105",
+      hostType: "hotel",
+      eventTitle: "Knowledge Park 2 Community Weekend Brunch",
+      hostName: "Knowledge Park 2 Community Hall, Greater Noida",
+      hostPhone: "+91 98450 11998",
+      venue: "Knowledge Park 2, Greater Noida",
+      coordinates: [28.4550, 77.5000], // ~1.0 km from Knowledge Park 2 (Zone: 3km)
+      foodType: "Continental Brunch",
+      category: "mixed",
+      items: "Assorted Pasta, Quiche, Croissants, Salads, Rice Platters",
+      servings: 90,
+      approxWeightKg: 35,
+      packagedType: "Bakery Trays & Troughs",
+      preparedTime: new Date(Date.now() - 180 * 60 * 1000).toISOString(),
+      seedOffsetMinutes: 180,
+      expiryHours: 5,
+      status: "available",
+      claimedByNgo: null,
+      volunteer: null,
+      otp: "4912",
+      notes: "Refrigerated holding area.",
+      image: "https://images.unsplash.com/photo-1555244162-803834f70033?w=600"
+    }
+  ],
+
+  ngos: [
+    {
+      id: "NGO-01",
+      name: "Robin Hood Food Relief Chapter",
+      phone: "+91 98800 11223",
+      area: "Knowledge Park 2 & Alpha, Greater Noida",
+      activeVolunteers: 24
+    },
+    {
+      id: "NGO-02",
+      name: "Akshaya Feed India Trust",
+      phone: "+91 98450 77889",
+      area: "Pari Chowk & Jagat Farm, Greater Noida",
+      activeVolunteers: 42
+    },
+    {
+      id: "NGO-03",
+      name: "Hope Haven Shelter & Kitchen",
+      phone: "+91 97311 44556",
+      area: "Knowledge Park 3 & ITS Campus, Greater Noida",
+      activeVolunteers: 15
+    }
+  ],
+
+  stats: {
+    totalMealsServed: 18450,
+    totalKgRescued: 7380,
+    co2SavedKg: 18450
+  }
+};
+
+</script>
+  <script>
+﻿/**
+ * ExtraPlate - Sound Synthesizer & Notification System
+ * Uses Web Audio API for zero-dependency sound chimes and UI toasts
+ */
+
+class NotificationEngine {
+  constructor() {
+    this.audioCtx = null;
+    this.toastContainer = null;
+    this.history = [];
+    this.unreadCount = 0;
+    this.init();
+  }
+
+  init() {
+    // Lazy initialize AudioContext on user interaction
+    const initAudio = () => {
+      if (!this.audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          this.audioCtx = new AudioContext();
+        }
+      }
+      document.removeEventListener('click', initAudio);
+      document.removeEventListener('keydown', initAudio);
+    };
+
+    document.addEventListener('click', initAudio, { once: true });
+    document.addEventListener('keydown', initAudio, { once: true });
+
+    // Create Toast Container if not present
+    this.toastContainer = document.getElementById('toast-container');
+    if (!this.toastContainer) {
+      this.toastContainer = document.createElement('div');
+      this.toastContainer.id = 'toast-container';
+      this.toastContainer.className = 'toast-container';
+      document.body.appendChild(this.toastContainer);
+    }
+  }
+
+  // Play synthesized notification sound using Web Audio API
+  playSound(type = 'chime') {
+    try {
+      if (!this.audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) this.audioCtx = new AudioContext();
+      }
+
+      if (!this.audioCtx) return;
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume();
+      }
+
+      const now = this.audioCtx.currentTime;
+
+      if (type === 'urgent') {
+        // Urgent 2-tone alert (high pitch)
+        [587.33, 880.00, 1046.50].forEach((freq, i) => {
+          const osc = this.audioCtx.createOscillator();
+          const gain = this.audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.12);
+          gain.gain.setValueAtTime(0.3, now + i * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.35);
+          osc.connect(gain);
+          gain.connect(this.audioCtx.destination);
+          osc.start(now + i * 0.12);
+          osc.stop(now + i * 0.12 + 0.36);
+        });
+      } else if (type === 'success') {
+        // Happy ascending 3-tone chime
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+          const osc = this.audioCtx.createOscillator();
+          const gain = this.audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + i * 0.08);
+          gain.gain.setValueAtTime(0.25, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.4);
+          osc.connect(gain);
+          gain.connect(this.audioCtx.destination);
+          osc.start(now + i * 0.08);
+          osc.stop(now + i * 0.08 + 0.45);
+        });
+      } else {
+        // Default warm gentle drop chime (C5 & G5)
+        [523.25, 783.99].forEach((freq, i) => {
+          const osc = this.audioCtx.createOscillator();
+          const gain = this.audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.1);
+          gain.gain.setValueAtTime(0.2, now + i * 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.5);
+          osc.connect(gain);
+          gain.connect(this.audioCtx.destination);
+          osc.start(now + i * 0.1);
+          osc.stop(now + i * 0.1 + 0.55);
+        });
+      }
+    } catch (e) {
+      console.warn("Audio synthesis note:", e);
+    }
+  }
+
+  // Show Toast and record in history
+  notify({ title, message, type = 'info', sound = 'chime', duration = 5000, action = null }) {
+    this.playSound(sound);
+
+    // Create Toast Element
+    const toast = document.createElement('div');
+    toast.className = `toast ${type === 'urgent' ? 'toast-urgent' : ''}`;
+    
+    let icon = '🔔';
+    if (type === 'urgent') icon = '🚨';
+    if (type === 'success') icon = '✅';
+    if (type === 'food') icon = '🍲';
+
+    toast.innerHTML = `
+      <div class="toast-icon">${icon}</div>
+      <div class="toast-content">
+        <div class="toast-title">${title}</div>
+        <div class="toast-message">${message}</div>
+      </div>
+      <button class="toast-close" aria-label="Close">&times;</button>
+    `;
+
+    // Close button
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+      this.dismissToast(toast);
+    });
+
+    this.toastContainer.appendChild(toast);
+
+    // Trigger animation
+    setTimeout(() => toast.classList.add('show'), 20);
+
+    // Auto dismiss
+    const timer = setTimeout(() => {
+      this.dismissToast(toast);
+    }, duration);
+
+    toast.dataset.timer = timer;
+
+    // Record in memory history
+    this.history.unshift({
+      id: Date.now(),
+      title,
+      message,
+      type,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    });
+    this.unreadCount++;
+    this.updateBadge();
+  }
+
+  dismissToast(toast) {
+    if (!toast) return;
+    toast.classList.remove('show');
+    clearTimeout(toast.dataset.timer);
+    setTimeout(() => {
+      if (toast.parentElement) toast.parentElement.removeChild(toast);
+    }, 300);
+  }
+
+  updateBadge() {
+    const badge = document.getElementById('ngo-alert-count');
+    if (badge) {
+      if (this.unreadCount > 0) {
+        badge.style.display = 'inline-block';
+        badge.textContent = this.unreadCount;
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  }
+
+  resetUnread() {
+    this.unreadCount = 0;
+    this.updateBadge();
+  }
+}
+
+// Global instance
+window.notifications = new NotificationEngine();
+
+</script>
+  <script>
+/**
+ * ExtraPlate - Central Reactive Data Store
+ */
+
+class Store {
+  constructor() {
+    this.STORAGE_KEY = 'EXTRAPLATE_STATE_V1';
+    this.channel = null;
+    this.liveLocation = false; // true only after a successful browser geolocation fix
+    this.listeners = [];
+    this.state = this.loadInitialState();
+    this.initBroadcastChannel();
+  }
+
+  loadInitialState() {
+    try {
+      const saved = localStorage.getItem(this.STORAGE_KEY);
+      if (saved) {
+        const state = JSON.parse(saved);
+        // Seed listings carry a fixed age (seedOffsetMinutes); recompute them on
+        // every load so the demo freshness windows never freeze at 'Expired'
+        // just because the browser saved the state yesterday.
+        (state.listings || []).forEach(item => {
+          if (item.seedOffsetMinutes != null) {
+            item.preparedTime = new Date(Date.now() - item.seedOffsetMinutes * 60 * 1000).toISOString();
+          }
+        });
+        return state;
+      }
+    } catch (e) {
+      console.warn("Storage load error:", e);
+    }
+    return JSON.parse(JSON.stringify(SEED_DATA));
+  }
+
+  // Live GPS: true = browser gave a real fix; false = Knowledge Park 2 fallback
+  setLiveLocation(coords) {
+    this.liveLocation = true;
+    this.setUserLocation(coords);
+  }
+
+  saveState() {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.state));
+    } catch (e) {
+      console.error("Storage save error:", e);
+    }
+  }
+
+  initBroadcastChannel() {
+    if ('BroadcastChannel' in window) {
+      this.channel = new BroadcastChannel('extraplate_sync_v1');
+      this.channel.onmessage = (event) => {
+        const { type, payload } = event.data;
+        if (type === 'STATE_UPDATED') {
+          this.state = payload.state;
+          this.notifyListeners({ eventType: payload.eventType, data: payload.data, remote: true });
+        }
+      };
+    }
+  }
+
+  broadcast(eventType, data) {
+    this.saveState();
+    this.notifyListeners({ eventType, data, remote: false });
+
+    if (this.channel) {
+      this.channel.postMessage({
+        type: 'STATE_UPDATED',
+        payload: {
+          eventType,
+          data,
+          state: this.state
+        }
+      });
+    }
+  }
+
+  subscribe(callback) {
+    this.listeners.push(callback);
+    return () => {
+      this.listeners = this.listeners.filter(cb => cb !== callback);
+    };
+  }
+
+  notifyListeners(changeMeta) {
+    this.listeners.forEach(cb => cb(this.state, changeMeta));
+  }
+
+  // --- Auth & Session ---
+  login(role, phone, name = '') {
+    this.state.activeRole = role;
+    this.state.authSession = {
+      role,
+      phone: phone || '+91 98765 43210',
+      name: name || (role === 'hotel' ? 'Grand Banquets & Hotel' : role === 'ngo' ? 'Robin Hood Relief Chapter' : 'Priya & Siddharth Sharma')
+    };
+    this.state.currentView = `portal_${role}`;
+    this.saveState();
+    this.broadcast('USER_LOGGED_IN', this.state.authSession);
+  }
+
+  logout() {
+    this.state.activeRole = null;
+    this.state.authSession = null;
+    this.state.currentView = 'home';
+    this.saveState();
+    this.broadcast('USER_LOGGED_OUT', null);
+  }
+
+  setZoneKm(km) {
+    this.state.selectedZoneKm = parseInt(km) || 10;
+    this.saveState();
+    this.broadcast('ZONE_CHANGED', this.state.selectedZoneKm);
+  }
+
+  setUserLocation(coords) {
+    this.state.userLocation = coords;
+    this.saveState();
+    this.broadcast('LOCATION_CHANGED', coords);
+  }
+
+  // --- Secret OTP Security ---
+  // Only the logged in host/hotel of this listing OR the assigned claiming NGO can see the OTP!
+  canViewSecretOtp(listingId) {
+    const listing = this.state.listings.find(i => i.id === listingId);
+    if (!listing) return false;
+
+    const session = this.state.authSession;
+    if (!session) return false;
+
+    // 1. If user is logged in as hotel or host, they see their own OTP
+    if (session.role === listing.hostType) {
+      return true;
+    }
+
+    // 2. If user is logged in as NGO, they see the OTP ONLY IF they claimed it
+    if (session.role === 'ngo' && listing.status === 'claimed') {
+      return true;
+    }
+
+    return false;
+  }
+
+  getSecretOtp(listingId) {
+    const listing = this.state.listings.find(i => i.id === listingId);
+    if (!listing) return null;
+    if (this.canViewSecretOtp(listingId)) {
+      return listing.otp;
+    }
+    return null;
+  }
+
+  // --- Actions ---
+  addListing(listingData) {
+    const newListing = {
+      id: `EP-${Math.floor(100 + Math.random() * 900)}`,
+      status: 'available',
+      claimedByNgo: null,
+      volunteer: null,
+      otp: Math.floor(1000 + Math.random() * 9000).toString(),
+      createdAt: new Date().toISOString(),
+      ...listingData
+    };
+
+    this.state.listings.unshift(newListing);
+    this.broadcast('LISTING_ADDED', newListing);
+    return newListing;
+  }
+
+  claimListing(listingId, { ngoName, volunteer }) {
+    const listing = this.state.listings.find(item => item.id === listingId);
+    if (!listing) return false;
+
+    listing.status = 'claimed';
+    listing.claimedByNgo = ngoName;
+    listing.volunteer = volunteer;
+
+    this.broadcast('LISTING_CLAIMED', listing);
+    return listing;
+  }
+
+  verifyOtpAndComplete(listingId, enteredOtp) {
+    const listing = this.state.listings.find(item => item.id === listingId);
+    if (!listing) return { success: false, message: 'Listing not found' };
+
+    if (listing.otp === enteredOtp.trim()) {
+      listing.status = 'completed';
+      this.state.stats.totalMealsServed += Number(listing.servings || 0);
+      this.state.stats.totalKgRescued += Number(listing.approxWeightKg || 0);
+      this.state.stats.co2SavedKg += Math.round(Number(listing.approxWeightKg || 0) * 2.5);
+
+      this.broadcast('LISTING_COMPLETED', listing);
+      return { success: true, listing };
+    }
+    return { success: false, message: 'Incorrect 4-Digit Security Code. Ask the host for their exact OTP.' };
+  }
+
+  getListing(id) {
+    return this.state.listings.find(item => item.id === id);
+  }
+
+  resetAllData() {
+    this.state = JSON.parse(JSON.stringify(SEED_DATA));
+    this.broadcast('RESET_DATA', null);
+  }
+}
+
+window.foodStore = new Store();
+
+</script>
+  <script>
+/**
+ * ExtraPlate - Interactive Leaflet Map with GPS Locality Zones (3km, 10km, 20km, 30km, 50km)
+ */
+
+class FoodRescueMap {
+  constructor() {
+    this.maps = {}; // map instances by container ID
+    this.radiusLayers = {};
+    this.markersLayers = {};
+    this.watchId = null;
+  }
+
+  init(elementId = 'locality-map') {
+    const el = document.getElementById(elementId);
+    if (!el || typeof L === 'undefined') return;
+
+    if (this.maps[elementId]) {
+      setTimeout(() => this.maps[elementId].invalidateSize(), 150);
+      return;
+    }
+
+    const defaultCenter = window.foodStore.state.userLocation || [28.46243, 77.49474];
+
+    const map = L.map(elementId, {
+      center: defaultCenter,
+      zoom: 13,
+      zoomControl: true
+    });
+
+    // Primary tiles: OpenStreetMap. If a PC/network blocks OSM tiles, fall back
+    // to CARTO's basemap automatically instead of leaving a blank map.
+    const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19
+    });
+    const carto = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+      maxZoom: 19
+    });
+    let tileErrors = 0;
+    osm.on('tileerror', () => {
+      tileErrors += 1;
+      if (tileErrors >= 4 && map.hasLayer(osm)) { map.removeLayer(osm); carto.addTo(map); }
+    });
+    osm.addTo(map);
+
+    this.markersLayers[elementId] = L.layerGroup().addTo(map);
+    this.radiusLayers[elementId] = L.layerGroup().addTo(map);
+    this.maps[elementId] = map;
+
+    this.detectUserLocation();
+    this.renderLocalityZone(elementId);
+  }
+
+  detectUserLocation() {
+    this.updateLocationStatus('Locating… — asking your browser for live GPS.');
+    if (!('geolocation' in navigator)) {
+      this.updateLocationStatus('This browser has no GPS support. Showing Knowledge Park 2, Greater Noida as the centre.');
+      this.useFallbackLocation();
+      return;
+    }
+    // NOTE: browsers only share GPS on a secure (https) page AND when the user
+    // allows it. Inside another site's embedded frame (e.g. the old Muse page)
+    // the browser blocks it outright — that is the usual 'access blocked' on PC.
+    // On a directly hosted page this call reaches the browser normally.
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords = [pos.coords.latitude, pos.coords.longitude];
+        window.foodStore.setLiveLocation(coords);
+        this.updateLocationStatus(`📍 Live location ON — ${coords[0].toFixed(5)}, ${coords[1].toFixed(5)} (±${Math.round(pos.coords.accuracy || 0)} m). Distances are from where you are right now.`);
+        this.refreshAll();
+        this.startLiveTracking();
+      },
+      (err) => {
+        const reason = err && err.code === 1
+          ? 'Location permission was blocked for this site on this device.'
+          : err && err.code === 2
+          ? 'Your device could not get a GPS fix right now.'
+          : 'Location request timed out.';
+        this.updateLocationStatus(`⚠️ Live location blocked: ${reason} Showing Knowledge Park 2, Greater Noida instead. Click “Use my live location”, then Allow location in your browser and reload.`);
+        this.useFallbackLocation();
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+    );
+  }
+
+  // Re-ask the browser for GPS (used by the 'Use my live location' buttons).
+  requestLiveLocation() {
+    this.detectUserLocation();
+  }
+
+  // Continuous live tracking: after the first fix, keep following the device
+  // (only re-rendering when it has actually moved >50 m, to avoid map flicker).
+  startLiveTracking() {
+    if (this.watchId != null || !('geolocation' in navigator)) return;
+    this.watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const coords = [pos.coords.latitude, pos.coords.longitude];
+        const prev = window.foodStore.state.userLocation || [28.46243, 77.49474];
+        if (this.calcDistanceKm(prev[0], prev[1], coords[0], coords[1]) < 0.05) return;
+        window.foodStore.setLiveLocation(coords);
+        this.updateLocationStatus(`📍 Live location ON — ${coords[0].toFixed(5)}, ${coords[1].toFixed(5)}. Distances are from where you are right now.`);
+        this.refreshAll();
+      },
+      () => { /* keep the last good fix; the status line already explains a block */ },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
+  }
+
+  useFallbackLocation() {
+    const fallback = [28.46243, 77.49474]; // Knowledge Park 2, Greater Noida
+    window.foodStore.liveLocation = false;
+    window.foodStore.setUserLocation(fallback);
+    this.refreshAll();
+  }
+
+  updateLocationStatus(msg) {
+    document.querySelectorAll('.location-status').forEach(el => { el.textContent = msg; });
+    const live = !!(window.foodStore && window.foodStore.liveLocation);
+    document.querySelectorAll('.live-location-badge').forEach(el => {
+      el.textContent = live ? '📍 Live location ON' : '📍 Centre: Knowledge Park 2, Greater Noida';
+    });
+  }
+
+  renderLocalityZone(elementId = 'locality-map') {
+    const map = this.maps[elementId];
+    const markerGroup = this.markersLayers[elementId];
+    const radiusGroup = this.radiusLayers[elementId];
+    if (!map || !markerGroup || !radiusGroup) return;
+
+    markerGroup.clearLayers();
+    radiusGroup.clearLayers();
+
+    const userLoc = window.foodStore.state.userLocation || [28.46243, 77.49474];
+    const selectedZoneKm = window.foodStore.state.selectedZoneKm || 10;
+    const listings = window.foodStore.state.listings;
+
+    // 1. Draw User GPS Location Pulse Pin
+    const userPin = L.divIcon({
+      className: 'gps-user-marker',
+      html: `<div class="gps-pulse-ring"></div><div class="gps-dot"></div>`,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
+    });
+
+    const userMarker = L.marker(userLoc, { icon: userPin, zIndexOffset: 1000 });
+    const isLive = !!(window.foodStore && window.foodStore.liveLocation);
+    userMarker.bindPopup(`
+      <div style="font-family: inherit; font-size: 13px; text-align: center;">
+        <strong style="color: #2563eb; display: block;">${isLive ? '📍 Your live location' : '📍 Centre: Knowledge Park 2, Greater Noida'}</strong>
+        <span style="color: #64748b; font-size: 11px;">${isLive ? 'Live GPS fix' : 'Fallback centre — live GPS is not on for this site'} • Scanning within <strong>${selectedZoneKm} km</strong> radius</span>
+      </div>
+    `);
+    radiusGroup.addLayer(userMarker);
+
+    // 2. Draw Selected Distance Zone Circle (3km, 10km, 20km, 30km, 50km)
+    const zoneCircle = L.circle(userLoc, {
+      radius: selectedZoneKm * 1000,
+      color: '#e11d48',
+      fillColor: '#e11d48',
+      fillOpacity: 0.06,
+      weight: 2,
+      dashArray: '5, 5'
+    });
+    radiusGroup.addLayer(zoneCircle);
+
+    // 3. Filter and Render Food Drops within the Zone
+    listings.forEach(item => {
+      if (!item.coordinates) return;
+      const [lat, lng] = item.coordinates;
+      const distKm = this.calcDistanceKm(userLoc[0], userLoc[1], lat, lng);
+
+      // Only plot if within selected distance zone!
+      if (distKm <= selectedZoneKm) {
+        let pinColor = '#e11d48';
+        let emoji = '🍲';
+
+        if (item.status === 'claimed') {
+          pinColor = '#3b82f6';
+          emoji = '🚚';
+        } else if (item.status === 'completed') {
+          pinColor = '#10b981';
+          emoji = '✅';
+        }
+
+        const customPin = L.divIcon({
+          className: 'custom-map-pin',
+          html: `
+            <div style="
+              background: ${pinColor};
+              width: 36px;
+              height: 36px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: white;
+              font-size: 16px;
+              box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+              border: 2px solid white;
+              cursor: pointer;
+            ">${emoji}</div>
+          `,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18],
+          popupAnchor: [0, -20]
+        });
+
+        const m = L.marker([lat, lng], { icon: customPin });
+        m.bindPopup(`
+          <div style="font-family: inherit; font-size: 13px; max-width: 220px; line-height: 1.4;">
+            <strong style="font-size: 14px; color: #0f172a; display:block;">${item.eventTitle}</strong>
+            <div style="color: #2563eb; font-weight: 700; font-size: 11px; margin-bottom: 3px;">📍 ${distKm.toFixed(1)} km from your location</div>
+            <div style="color: #e11d48; font-weight: 700; margin-bottom: 4px;">${item.servings} Servings (${item.category.toUpperCase()})</div>
+            <div style="color: #64748b; font-size: 12px; margin-bottom: 6px;">${item.venue}</div>
+            ${item.status === 'available' ? `
+              <button onclick="window.app.openClaimModal('${item.id}')" style="
+                width: 100%;
+                background: #e11d48;
+                color: white;
+                border: none;
+                padding: 6px 10px;
+                border-radius: 6px;
+                font-weight: 600;
+                cursor: pointer;
+              ">Claim for Pickup</button>
+            ` : `<span style="font-weight:600; color: #2563eb;">Status: ${item.status.toUpperCase()}</span>`}
+          </div>
+        `);
+        markerGroup.addLayer(m);
+      }
+    });
+
+    // Auto-fit zone circle bounds
+    map.fitBounds(zoneCircle.getBounds(), { padding: [25, 25], maxZoom: 15 });
+  }
+
+  calcDistanceKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  centerOnUser(elementId = 'locality-map') {
+    const userLoc = window.foodStore.state.userLocation || [28.46243, 77.49474];
+    if (this.maps[elementId]) {
+      this.maps[elementId].setView(userLoc, 13, { animate: true });
+    }
+  }
+
+  refreshAll() {
+    Object.keys(this.maps).forEach(id => {
+      this.renderLocalityZone(id);
+    });
+  }
+}
+
+window.rescueMap = new FoodRescueMap();
+
+</script>
+  <script>
+﻿/**
+ * ExtraPlate - Impact Visualizations & Charts
+ */
+
+class ImpactCharts {
+  constructor() {
+    this.weeklyChart = null;
+    this.categoryChart = null;
+  }
+
+  init() {
+    if (typeof Chart === 'undefined') return;
+
+    this.renderWeeklyTrend();
+    this.renderCategoryBreakdown();
+  }
+
+  renderWeeklyTrend() {
+    const ctx = document.getElementById('weeklyTrendChart');
+    if (!ctx) return;
+
+    if (this.weeklyChart) this.weeklyChart.destroy();
+
+    this.weeklyChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Meals Rescued',
+          data: [1250, 980, 1420, 2100, 3400, 4850, 4450],
+          backgroundColor: '#10b981',
+          borderRadius: 8,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (item) => ` ${item.raw.toLocaleString()} Meals`
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: '#f1f5f9' },
+            ticks: { color: '#64748b', font: { family: 'Inter' } }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#64748b', font: { family: 'Inter' } }
+          }
+        }
+      }
+    });
+  }
+
+  renderCategoryBreakdown() {
+    const ctx = document.getElementById('categoryPieChart');
+    if (!ctx) return;
+
+    if (this.categoryChart) this.categoryChart.destroy();
+
+    this.categoryChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Cooked Banquets', 'Corporate Lunch', 'Bakery / Dry', 'Packed Meals'],
+        datasets: [{
+          data: [52, 24, 14, 10],
+          backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              boxWidth: 12,
+              padding: 15,
+              font: { family: 'Inter', size: 12 },
+              color: '#334155'
+            }
+          }
+        }
+      }
+    });
+  }
+
+  update() {
+    if (this.weeklyChart) this.weeklyChart.update();
+    if (this.categoryChart) this.categoryChart.update();
+  }
+}
+
+window.impactCharts = new ImpactCharts();
+
+</script>
+  <script>
+/**
+ * ExtraPlate - Application Controller & Flow Router
+ */
+
+class ExtraPlateApp {
+  constructor() {
+    this.pendingLoginRole = null;
+    this.selectedListingId = null;
+  }
+
+  init() {
+    this.bindEvents();
+    this.renderCurrentView();
+    if (window.impactCharts) { window.impactCharts.init(); }
+    this.renderImpactHub();
+
+    window.foodStore.subscribe((state, changeMeta) => {
+      this.handleStateChange(changeMeta);
+    });
+  }
+
+  bindEvents() {
+    // 3 Big Home Role Buttons
+    document.querySelectorAll('[data-entry-role]').forEach(card => {
+      card.addEventListener('click', () => {
+        const role = card.getAttribute('data-entry-role');
+        this.openLoginModal(role);
+      });
+    });
+
+    // Login Form Submit
+    const loginForm = document.getElementById('phone-login-form');
+    if (loginForm) {
+      loginForm.addEventListener('submit', (e) => this.handlePhoneLogin(e));
+    }
+
+    // Distance Locality Zone Pills
+    document.querySelectorAll('[data-zone-km]').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('[data-zone-km]').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        const km = pill.getAttribute('data-zone-km');
+        window.foodStore.setZoneKm(km);
+        window.rescueMap.refreshAll();
+        this.renderRoleListings();
+      });
+    });
+
+    // Post Food Forms
+    const postForm = document.getElementById('post-food-form');
+    if (postForm) postForm.addEventListener('submit', (e) => this.handlePostFood(e));
+
+    // Claim Form
+    const claimForm = document.getElementById('claim-food-form');
+    if (claimForm) claimForm.addEventListener('submit', (e) => this.handleClaimFood(e));
+
+    // OTP Verify Form
+    const otpForm = document.getElementById('otp-verify-form');
+    if (otpForm) otpForm.addEventListener('submit', (e) => this.handleVerifyOtp(e));
+  }
+
+  // --- View & Navigation Management ---
+  renderCurrentView() {
+    const currentView = window.foodStore.state.currentView || 'home';
+    const auth = window.foodStore.state.authSession;
+
+    // Toggle pages
+    document.querySelectorAll('.view-page').forEach(page => page.classList.remove('active'));
+    const activePage = document.getElementById(`view-${currentView}`);
+    if (activePage) activePage.classList.add('active');
+
+    // Update Header Auth Session status
+    const sessionPill = document.getElementById('navbar-user-session');
+    if (sessionPill) {
+      if (auth) {
+        sessionPill.style.display = 'inline-flex';
+        const roleTag = auth.role === 'hotel' ? '🏨 Hotel Manager' : auth.role === 'ngo' ? '🤝 NGO Rescuer' : '🎉 Event Host';
+        document.getElementById('session-role-text').textContent = roleTag;
+        document.getElementById('session-phone-text').textContent = auth.phone;
+      } else {
+        sessionPill.style.display = 'none';
+      }
+    }
+
+    // Initialize Map if viewing a portal
+    if (currentView.startsWith('portal_')) {
+      setTimeout(() => {
+        const mapId = `${currentView}-map`;
+        window.rescueMap.init(mapId);
+        this.renderRoleListings();
+      }, 100);
+    }
+  }
+
+  // --- Auth Flow ---
+  openLoginModal(role) {
+    this.pendingLoginRole = role;
+    const modal = document.getElementById('modal-phone-login');
+    const roleTitleEl = document.getElementById('login-role-title');
+    const roleIconEl = document.getElementById('login-role-icon');
+
+    if (role === 'hotel') {
+      roleTitleEl.textContent = 'Hotels, Banquets & Caterers Login';
+      roleIconEl.textContent = '🏨';
+    } else if (role === 'ngo') {
+      roleTitleEl.textContent = 'NGO & Relief Volunteer Login';
+      roleIconEl.textContent = '🤝';
+    } else {
+      roleTitleEl.textContent = 'Individual Event Host Login';
+      roleIconEl.textContent = '🎉';
+    }
+
+    if (modal) modal.classList.add('active');
+    setTimeout(() => {
+      const phoneInput = document.getElementById('login-phone-input');
+      if (phoneInput) phoneInput.focus();
+    }, 100);
+  }
+
+  handlePhoneLogin(e) {
+    e.preventDefault();
+    const phoneInput = document.getElementById('login-phone-input');
+    const phone = phoneInput.value.trim() || '+91 98765 43210';
+    const role = this.pendingLoginRole || 'hotel';
+
+    window.foodStore.login(role, phone);
+    this.closeModal('modal-phone-login');
+    this.renderCurrentView();
+
+    window.notifications.notify({
+      title: 'Welcome to ExtraPlate! 👋',
+      message: `Successfully logged in as ${role === 'hotel' ? 'Hotel & Banquet Manager' : role === 'ngo' ? 'NGO Rescue Volunteer' : 'Individual Event Host'}.`,
+      type: 'success',
+      sound: 'success'
+    });
+  }
+
+  logout() {
+    window.foodStore.logout();
+    this.renderCurrentView();
+  }
+
+  // --- State Reaction ---
+  handleStateChange(changeMeta) {
+    this.renderRoleListings();
+    this.renderImpactHub();
+    window.rescueMap.refreshAll();
+
+    if (changeMeta && changeMeta.eventType === 'LISTING_ADDED') {
+      const item = changeMeta.data;
+      window.notifications.notify({
+        title: 'New Surplus Food Alert! 🍲',
+        message: `${item.eventTitle} posted ${item.servings} servings in your locality!`,
+        type: 'urgent',
+        sound: 'urgent'
+      });
+    } else if (changeMeta && changeMeta.eventType === 'LISTING_CLAIMED') {
+      const item = changeMeta.data;
+      window.notifications.notify({
+        title: 'Pickup Claimed! 🚚',
+        message: `${item.claimedByNgo} is en route to collect ${item.eventTitle}.`,
+        type: 'success',
+        sound: 'success'
+      });
+    } else if (changeMeta && changeMeta.eventType === 'LISTING_COMPLETED') {
+      const item = changeMeta.data;
+      window.notifications.notify({
+        title: 'Rescue Completed! ✅',
+        message: `Handoff verified for ${item.eventTitle}. Donation certificate generated.`,
+        type: 'success',
+        sound: 'success'
+      });
+    }
+  }
+
+  // --- Render Listings By Role & Locality Zone ---
+  renderRoleListings() {
+    const currentView = window.foodStore.state.currentView;
+    const selectedZoneKm = window.foodStore.state.selectedZoneKm || 10;
+    const userLoc = window.foodStore.state.userLocation || [28.46243, 77.49474];
+    const listings = window.foodStore.state.listings;
+
+    // Filter by locality distance zone
+    const zoneListings = listings.filter(item => {
+      if (!item.coordinates) return true;
+      const dist = window.rescueMap.calcDistanceKm(userLoc[0], userLoc[1], item.coordinates[0], item.coordinates[1]);
+      return dist <= selectedZoneKm;
+    });
+
+    if (currentView === 'portal_hotel') {
+      this.renderHotelPortal(zoneListings);
+    } else if (currentView === 'portal_host') {
+      this.renderHostPortal(zoneListings);
+    } else if (currentView === 'portal_ngo') {
+      this.renderNgoPortal(zoneListings);
+    }
+  }
+
+  renderHotelPortal(zoneListings) {
+    const hotelListings = window.foodStore.state.listings.filter(i => i.hostType === 'hotel');
+    const container = document.getElementById('hotel-listings-grid');
+    if (!container) return;
+
+    if (hotelListings.length === 0) {
+      container.innerHTML = `<p style="color: #64748b; font-size: 0.9rem;">No active hotel donations posted yet.</p>`;
+    } else {
+      container.innerHTML = hotelListings.map(item => this.createHostCardHTML(item)).join('');
+    }
+  }
+
+  renderHostPortal(zoneListings) {
+    const hostListings = window.foodStore.state.listings.filter(i => i.hostType === 'host');
+    const container = document.getElementById('host-listings-grid');
+    if (!container) return;
+
+    if (hostListings.length === 0) {
+      container.innerHTML = `<p style="color: #64748b; font-size: 0.9rem;">No active celebration food drops posted yet.</p>`;
+    } else {
+      container.innerHTML = hostListings.map(item => this.createHostCardHTML(item)).join('');
+    }
+  }
+
+  renderNgoPortal(zoneListings) {
+    const container = document.getElementById('ngo-feed-grid');
+    if (!container) return;
+
+    if (zoneListings.length === 0) {
+      container.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; background: white; border-radius: 1rem; border: 1px dashed #cbd5e1;">
+          <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">📡</div>
+          <h4 style="color: #334155;">No Surplus Food in this Distance Zone</h4>
+          <p style="color: #64748b; font-size: 0.85rem; margin-top: 0.3rem;">
+            Try increasing the distance zone above (e.g. 20 km, 30 km, 50 km) or simulate a drop.
+          </p>
+        </div>
+      `;
+    } else {
+      container.innerHTML = zoneListings.map(item => this.createNgoCardHTML(item)).join('');
+    }
+  }
+
+  createHostCardHTML(item) {
+    const timeMeta = this.calculateTimeLeft(item);
+    const otp = item.otp; // Visible ONLY to the logged in hotel / host
+
+    return `
+      <div class="food-card">
+        <div class="food-card-img-wrap">
+          <img class="food-card-img" src="${item.image}" alt="${item.eventTitle}">
+          <div class="food-card-overlay-badge">
+            <span class="badge ${item.status === 'available' ? 'badge-available' : item.status === 'claimed' ? 'badge-claimed' : 'badge-completed'}">
+              ${item.status.toUpperCase()}
+            </span>
+          </div>
+        </div>
+
+        <div class="food-card-body">
+          <div class="food-card-header">
+            <div>
+              <div class="food-card-title">${item.eventTitle}</div>
+              <div class="food-card-loc">📍 ${item.venue}</div>
+            </div>
+          </div>
+
+          <!-- Secret OTP Vault for Hotel/Host -->
+          <div class="private-otp-vault">
+            <div style="font-size: 0.72rem; color: #fda4af; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;">
+              🔐 Secret Pickup OTP (Share with NGO Driver)
+            </div>
+            <div class="private-otp-code-box">
+              <div class="private-otp-digits">${otp}</div>
+            </div>
+            <div style="font-size: 0.78rem; color: #94a3b8;">
+              🛡️ Provide this 4-digit code to the NGO driver on arrival to release food.
+            </div>
+          </div>
+
+          <div class="food-card-spec-grid">
+            <div>👥 <strong>${item.servings}</strong> Servings</div>
+            <div>⚖️ <strong>~${item.approxWeightKg} kg</strong></div>
+            <div>🍱 ${item.foodType}</div>
+            <div><span class="badge ${item.category === 'veg' ? 'badge-available' : 'badge-urgent'}">${item.category.toUpperCase()}</span></div>
+          </div>
+
+          ${item.status === 'claimed' ? `
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px; font-size: 13px;">
+              <strong style="color: #1e40af; display:block;">Assigned NGO: ${item.claimedByNgo}</strong>
+              <div style="color: #3b82f6;">Driver: ${item.volunteer ? item.volunteer.name : 'En route'} (${item.volunteer ? item.volunteer.phone : ''})</div>
+              <div style="color: #64748b; font-size: 11px;">ETA: ~${item.volunteer ? item.volunteer.eta : '15 mins'}</div>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="food-card-footer">
+          <span style="font-size: 0.8rem; color: #64748b;">ID: <strong>${item.id}</strong></span>
+          <div>
+            ${item.status === 'completed' ? `
+              <button class="btn btn-primary btn-sm" onclick="window.app.openCertificateModal('${item.id}')">
+                📜 Donation Certificate
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  createNgoCardHTML(item) {
+    const timeMeta = this.calculateTimeLeft(item);
+    const userLoc = window.foodStore.state.userLocation || [28.46243, 77.49474];
+    let distText = '';
+    if (item.coordinates) {
+      const d = window.rescueMap.calcDistanceKm(userLoc[0], userLoc[1], item.coordinates[0], item.coordinates[1]);
+      distText = `<span style="color: #2563eb; font-weight: 700;">📍 ${d.toFixed(1)} km away</span>`;
+    }
+
+    return `
+      <div class="food-card">
+        <div class="food-card-img-wrap">
+          <img class="food-card-img" src="${item.image}" alt="${item.eventTitle}">
+          <div class="food-card-overlay-badge">
+            <span class="badge ${item.status === 'available' ? 'badge-available' : item.status === 'claimed' ? 'badge-claimed' : 'badge-completed'}">
+              ${item.status.toUpperCase()}
+            </span>
+          </div>
+        </div>
+
+        <div class="food-card-body">
+          <div class="food-card-header">
+            <div>
+              <div class="food-card-title">${item.eventTitle}</div>
+              <div class="food-card-loc">📍 ${item.venue} • ${distText}</div>
+            </div>
+          </div>
+
+          <div style="font-size: 0.85rem; color: #334155;">
+            <strong>Items:</strong> ${item.items}
+          </div>
+
+          <div class="food-card-spec-grid">
+            <div>👥 <strong>${item.servings}</strong> Servings</div>
+            <div>📦 ${item.packagedType}</div>
+            <div>📞 ${item.hostPhone}</div>
+            <div><span class="badge ${item.category === 'veg' ? 'badge-available' : 'badge-urgent'}">${item.category.toUpperCase()}</span></div>
+          </div>
+
+          <div style="font-size: 0.78rem; color: #059669; font-weight: 600;">
+            ⏳ Safe Window: ${timeMeta.text}
+          </div>
+        </div>
+
+        <div class="food-card-footer">
+          <span style="font-size: 0.8rem; color: #64748b;">${item.approxWeightKg} kg</span>
+          <div>
+            ${item.status === 'available' ? `
+              <button class="btn btn-primary btn-sm" onclick="window.app.openClaimModal('${item.id}')">
+                🤝 Claim for Pickup
+              </button>
+            ` : item.status === 'claimed' ? `
+              <button class="btn btn-dark btn-sm" onclick="window.app.openOtpVerifyModal('${item.id}')">
+                🔑 Enter Host's OTP on Arrival
+              </button>
+            ` : `
+              <span class="badge badge-completed">✅ Rescued</span>
+            `}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  renderImpactHub() {
+    const s = window.foodStore.state.stats || {};
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = Number(val || 0).toLocaleString('en-IN'); };
+    set('stat-meals', s.totalMealsServed);
+    set('stat-kg', s.totalKgRescued);
+    set('stat-co2', s.co2SavedKg);
+    const lb = document.getElementById('donor-leaderboard');
+    if (lb) {
+      const done = window.foodStore.state.listings.filter(i => i.status === 'completed');
+      const rows = [...window.foodStore.state.listings]
+        .sort((a, b) => (b.servings || 0) - (a.servings || 0)).slice(0, 5)
+        .map((i, n) => `<div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid #f1f5f9;font-size:0.85rem;"><span>${n + 1}. ${i.hostName}</span><strong>${i.servings} meals</strong></div>`).join('');
+      lb.innerHTML = rows || '<p style="color:#64748b;font-size:0.85rem;">No listings yet.</p>';
+    }
+    const ng = document.getElementById('ngo-directory');
+    if (ng) {
+      ng.innerHTML = window.foodStore.state.ngos.map(n => `<div style="padding:0.5rem 0;border-bottom:1px solid #f1f5f9;font-size:0.85rem;"><strong>${n.name}</strong><div style="color:#64748b;">${n.area} • ${n.activeVolunteers} active volunteers</div></div>`).join('');
+    }
+  }
+
+  calculateTimeLeft(item) {
+    const prepTime = new Date(item.preparedTime).getTime();
+    const expiryMs = (item.expiryHours || 4) * 60 * 60 * 1000;
+    const diffMin = Math.round((prepTime + expiryMs - Date.now()) / 60000);
+
+    if (diffMin <= 0) return { text: 'Expired', isUrgent: true };
+    const hours = Math.floor(diffMin / 60);
+    const mins = diffMin % 60;
+    return {
+      text: hours > 0 ? `${hours}h ${mins}m left` : `${mins}m left!`,
+      isUrgent: diffMin < 90
+    };
+  }
+
+  // --- Modals ---
+  openPostModal(hostType = 'hotel') {
+    const modal = document.getElementById('modal-post-food');
+    const input = document.getElementById('hostTypeInput');
+    if (input) input.value = hostType;
+    if (modal) modal.classList.add('active');
+  }
+
+  closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.remove('active');
+  }
+
+  handlePostFood(e) {
+    e.preventDefault();
+    const form = e.target;
+    const hostType = form.hostType.value || 'hotel';
+
+    const newListing = {
+      hostType: hostType,
+      eventTitle: form.eventTitle.value,
+      hostName: form.hostName.value,
+      hostPhone: form.hostPhone.value,
+      venue: form.venue.value,
+      coordinates: [28.46243 + (Math.random() - 0.5) * 0.04, 77.49474 + (Math.random() - 0.5) * 0.04],
+      foodType: form.foodType.value,
+      category: form.category.value,
+      items: form.items.value,
+      servings: parseInt(form.servings.value) || 50,
+      approxWeightKg: Math.round((parseInt(form.servings.value) || 50) * 0.35),
+      packagedType: form.packagedType.value,
+      preparedTime: new Date().toISOString(),
+      expiryHours: parseFloat(form.expiryHours.value) || 4,
+      notes: form.notes.value,
+      image: form.imageUrl.value || 'https://images.unsplash.com/photo-1555244162-803834f70033?w=600'
+    };
+
+    window.foodStore.addListing(newListing);
+    form.reset();
+    this.closeModal('modal-post-food');
+
+    window.notifications.notify({
+      title: 'Surplus Food Posted!',
+      message: `Your donation is now broadcasting to nearby NGOs. Your secret pickup OTP is shown on your dashboard.`,
+      type: 'success',
+      sound: 'success'
+    });
+  }
+
+  openClaimModal(listingId) {
+    this.selectedListingId = listingId;
+    const listing = window.foodStore.getListing(listingId);
+    if (!listing) return;
+
+    const modal = document.getElementById('modal-claim-food');
+    document.getElementById('claim-food-title').textContent = listing.eventTitle;
+    document.getElementById('claim-food-details').textContent = `${listing.servings} Servings (${listing.items}) • 📍 ${listing.venue}`;
+    if (modal) modal.classList.add('active');
+  }
+
+  handleClaimFood(e) {
+    e.preventDefault();
+    if (!this.selectedListingId) return;
+
+    const form = e.target;
+    const ngoSelect = form.ngoSelect;
+    const ngoName = ngoSelect.options[ngoSelect.selectedIndex].text;
+
+    window.foodStore.claimListing(this.selectedListingId, {
+      ngoName: ngoName,
+      volunteer: {
+        name: form.volunteerName.value,
+        phone: form.volunteerPhone.value,
+        vehicle: form.vehicle.value,
+        eta: `${form.eta.value} mins`
+      }
+    });
+
+    this.closeModal('modal-claim-food');
+    window.notifications.notify({
+      title: 'Pickup Assigned!',
+      message: `Driver dispatched. When arriving at the venue, ask the host for their 4-digit OTP to complete handoff.`,
+      type: 'success',
+      sound: 'success'
+    });
+  }
+
+  openOtpVerifyModal(listingId) {
+    this.selectedListingId = listingId;
+    const listing = window.foodStore.getListing(listingId);
+    if (!listing) return;
+
+    const modal = document.getElementById('modal-verify-otp');
+    document.getElementById('verify-event-title').textContent = `Pickup for ${listing.eventTitle}`;
+    document.querySelectorAll('.otp-digit-input').forEach(i => i.value = '');
+    const err = document.getElementById('otp-error-msg');
+    if (err) err.style.display = 'none';
+
+    if (modal) modal.classList.add('active');
+    setTimeout(() => {
+      const first = document.querySelector('.otp-digit-input');
+      if (first) first.focus();
+    }, 100);
+  }
+
+  handleVerifyOtp(e) {
+    e.preventDefault();
+    if (!this.selectedListingId) return;
+
+    const inputs = document.querySelectorAll('.otp-digit-input');
+    let entered = '';
+    inputs.forEach(i => entered += i.value);
+
+    const res = window.foodStore.verifyOtpAndComplete(this.selectedListingId, entered);
+    if (res.success) {
+      this.closeModal('modal-verify-otp');
+      this.openCertificateModal(this.selectedListingId);
+    } else {
+      const err = document.getElementById('otp-error-msg');
+      if (err) {
+        err.textContent = res.message;
+        err.style.display = 'block';
+      }
+    }
+  }
+
+  openCertificateModal(listingId) {
+    const listing = window.foodStore.getListing(listingId);
+    if (!listing) return;
+
+    const modal = document.getElementById('modal-certificate');
+    document.getElementById('cert-donor-name').textContent = listing.hostName || listing.eventTitle;
+    document.getElementById('cert-event-name').textContent = listing.eventTitle;
+    document.getElementById('cert-servings').textContent = `${listing.servings} Meals Rescued (~${listing.approxWeightKg} kg)`;
+    document.getElementById('cert-ngo-name').textContent = listing.claimedByNgo || 'Verified NGO Rescue Network';
+    document.getElementById('cert-date').textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    if (modal) modal.classList.add('active');
+  }
+
+  // --- Simulations ---
+  simulateSurplusDrop() {
+    const samples = [
+      { title: "JW Marriott Tech Dinner Buffet", name: "JW Marriott Banquets", type: "hotel", servings: 90, kg: 36, items: "Paneer Butter Masala, Veg Dum Biryani, Rotis, Gulab Jamun" },
+      { title: "Kapoor Family Sangeet Feast", name: "Sunil Kapoor", type: "host", servings: 60, kg: 24, items: "Dal Makhani, Pulao, Paneer Tikka, Mini Samosas, Jalebi" }
+    ];
+
+    const pick = samples[Math.floor(Math.random() * samples.length)];
+    window.foodStore.addListing({
+      hostType: pick.type,
+      eventTitle: pick.title,
+      hostName: pick.name,
+      hostPhone: "+91 98450 " + Math.floor(10000 + Math.random() * 90000),
+      venue: "Knowledge Park 2, Greater Noida",
+      coordinates: [28.46243 + (Math.random() - 0.5) * 0.03, 77.49474 + (Math.random() - 0.5) * 0.03],
+      foodType: "Cooked Hot Meals",
+      category: "veg",
+      items: pick.items,
+      servings: pick.servings,
+      approxWeightKg: pick.kg,
+      packagedType: "Insulated Food Containers",
+      preparedTime: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+      expiryHours: 4,
+      notes: "Fresh buffet surplus. Ready for pickup.",
+      image: "https://images.unsplash.com/photo-1555244162-803834f70033?w=600"
+    });
+  }
+
+  simulateNgoClaim() {
+    const available = window.foodStore.state.listings.find(i => i.status === 'available');
+    if (!available) {
+      this.simulateSurplusDrop();
+      setTimeout(() => this.simulateNgoClaim(), 500);
+      return;
+    }
+
+    const ngos = window.foodStore.state.ngos;
+    const randomNgo = ngos[Math.floor(Math.random() * ngos.length)];
+
+    window.foodStore.claimListing(available.id, {
+      ngoName: randomNgo.name,
+      volunteer: {
+        name: "Rahul Sharma",
+        phone: "+91 98451 22334",
+        vehicle: "Eco-Cargo Van (KA-01-AB-1234)",
+        eta: "15 mins"
+      }
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  window.app = new ExtraPlateApp();
+  window.app.init();
+});
+
+</script>
+
 </body>
 </html>
